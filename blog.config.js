@@ -52,7 +52,7 @@ const BLOG = {
   ...require('./conf/dev.config'), // 开发、调试时需要关注的配置
 
   // 自定义外部脚本，外部样式
-  CUSTOM_EXTERNAL_JS: [''], // e.g. ['http://xx.com/script.js','http://xx.com/script.js']
+  CUSTOM_EXTERNAL_JS: ['Pocket Bird'], // e.g. ['https://github.com/IdreesInc/Pocket-Bird/raw/refs/heads/main/dist/userscript/birb.user.js']
   CUSTOM_EXTERNAL_CSS: [''], // e.g. ['http://xx.com/style.css','http://xx.com/style.css']
 
   // 自定义菜单
@@ -74,11 +74,6 @@ const BLOG = {
 
   // uuid重定向至 slug
   UUID_REDIRECT: process.env.UUID_REDIRECT || false,
-
-  // 加载 Pocket Bird 小鸟脚本
-  CUSTOM_EXTERNAL_JS: [
-    "https://github.com/IdreesInc/Pocket-Bird/raw/refs/heads/main/dist/userscript/birb.user.js"
-  ]
 }
 
 module.exports = BLOG
