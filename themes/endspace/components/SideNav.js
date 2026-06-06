@@ -114,16 +114,27 @@ export const SideNav = (props) => {
   }, [activeTab])
 
   // Render icon component
-  const renderIcon = (item, isActive) => {
-    const icon = item.pageIcon || item.customIcon || ''
+const renderIcon = (item, isActive) => {
+  const icon = item.pageIcon || item.customIcon || ''
+  if (!icon) return null
+
+  // 1. 如果是图片链接（http 或 https 开头）
+  if (icon.startsWith('http://') || icon.startsWith('https://')) {
     return (
-      <span
-        className={`inline-flex h-5 w-5 items-center justify-center transition-all duration-300 ${isActive ? 'scale-110' : ''}`}
-      >
-        <NotionMenuIcon icon={icon} active={isActive} />
+      <span className={`inline-flex h-5 w-5 items-center justify-center transition-all duration-300 ${isActive ? 'scale-110' : ''}`}>
+        <img src={icon} alt="menu icon" className="w-full h-full object-contain" />
       </span>
     )
   }
+
+  // 2. 否则，把它当作 CSS 类名，渲染一个 <i> 标签
+  // 这能同时支持 Font Awesome (fas fa-xxx) 和 iconfont (icon-xxx)
+  return (
+    <span className={`inline-flex h-5 w-5 items-center justify-center transition-all duration-300 ${isActive ? 'scale-110' : ''}`}>
+      <i className={icon}></i>
+    </span>
+  )
+}
 
   // Render social icon
   const renderSocialIcon = (key, svg, label) => {
