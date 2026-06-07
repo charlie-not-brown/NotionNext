@@ -215,7 +215,7 @@ const playSharedTrack = (index, shouldPlay = sharedState.isPlaying) => {
 // ---------- 新增：MetingJS 歌单获取 ----------
 const fetchMetingPlaylist = async (server, id) => {
   // 使用稳定可靠的 Meting API (i-meto)
-  const apiUrl = `https://api.i-meto.com/meting/api?server=${server}&type=playlist&id=${id}`
+  const apiUrl = `https://163.hyc.moe?server=netease&type=playlist&id=${playlistId}`
   try {
     const response = await fetch(apiUrl)
     if (!response.ok) throw new Error(`HTTP ${response.status}`)
