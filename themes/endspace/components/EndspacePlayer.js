@@ -1,7 +1,5 @@
 import { useState, useEffect, useRef } from 'react' // 确保导入 useRef
 import { siteConfig } from '@/lib/config'
-import APlayer from 'aplayer' // 导入 APlayer
-import 'aplayer/dist/APlayer.min.css'
 import {
   IconPlayerPlay,
   IconPlayerPause,
@@ -214,6 +212,32 @@ const fetchMetingPlaylist = async (server, id) => {
   }
 }
 
+let aplayerLoaded = false
+const loadAPlayer = () => {
+  return new Promise((resolve) => {
+    if (typeof window === 'undefined') return resolve(false)
+    if (window.APlayer) {
+      aplayerLoaded = true
+      return resolve(true)
+    }
+    if (aplayerLoaded) return resolve(true)
+
+    const cssLink = document.createElement('link')
+    cssLink.rel = 'stylesheet'
+    cssLink.href = 'https://cdn.jsdelivr.net/npm/aplayer@1.10.0/dist/APlayer.min.css'
+    document.head.appendChild(cssLink)
+
+    const script = document.createElement('script')
+    script.src = 'https://cdn.jsdelivr.net/npm/aplayer@1.10.0/dist/APlayer.min.js'  // 直接写死
+    script.onload = () => {
+      aplayerLoaded = true
+      resolve(true)
+    }
+    script.onerror = () => resolve(false)
+    document.head.appendChild(script)
+  })
+}
+
 // ---------- 组件主体 ----------
 export const EndspacePlayer = ({ isExpanded, embedded = false }) => {
   const [playerState, setPlayerState] = useState(sharedState)
@@ -276,11 +300,12 @@ export const EndspacePlayer = ({ isExpanded, embedded = false }) => {
   }, [isExpanded])
 
   // ---------- 歌词同步相关 ----------
-  // 当歌曲切换或 lrc 变化时，重新初始化歌词 APlayer
+  // 异步创建歌词播放器（使用 CDN）
   useEffect(() => {
     if (!embedded || !isExpanded) return
+
+    // 如果没有歌词，销毁已有实例并清空容器
     if (!currentAudio.lrc) {
-      // 如果没有歌词，销毁旧实例并清空容器
       if (lyricPlayerRef.current) {
         lyricPlayerRef.current.destroy()
         lyricPlayerRef.current = null
@@ -291,49 +316,68 @@ export const EndspacePlayer = ({ isExpanded, embedded = false }) => {
       return
     }
 
-    // 创建新的歌词 APlayer 实例（只显示歌词，不发声）
-    if (lyricContainerRef.current) {
-      // 销毁旧的
-      if (lyricPlayerRef.current) {
-        lyricPlayerRef.current.destroy()
-        lyricPlayerRef.current = null
+    let isMounted = true
+
+    const initLyricPlayer = async () => {
+      await loadAPlayer()
+      if (!isMounted) return
+      if (!window.APlayer) {
+        console.warn('APlayer 加载失败')
+        return
       }
-      // 构建音频对象，包含 lrc
-      const audioObj = {
-        name: currentAudio.name,
-        artist: currentAudio.artist,
-        url: currentAudio.url,   // 必须有一个 url 才能初始化，但不会播放（preload: 'none' 且不调用 play）
-        lrc: currentAudio.lrc
+
+      if (lyricContainerRef.current) {
+        // 销毁旧实例
+        if (lyricPlayerRef.current) {
+          lyricPlayerRef.current.destroy()
+          lyricPlayerRef.current = null
+        }
+
+        const audioObj = {
+          name: currentAudio.name,
+          artist: currentAudio.artist,
+          url: currentAudio.url,
+          lrc: currentAudio.lrc
+        }
+
+        const lyricPlayer = new window.APlayer({
+          container: lyricContainerRef.current,
+          audio: [audioObj],
+          lrcType: 3,
+          autoplay: false,
+          preload: 'none',
+          showLrc: true,
+          theme: 'var(--endspace-accent-yellow)',
+          volume: 0,
+          fixed: false,
+          listFolded: true
+        })
+
+        // 隐藏控制栏（只保留歌词面板）
+        if (lyricPlayer.template) {
+          const aplayerDiv = lyricPlayer.template
+          aplayerDiv.style.background = 'transparent'
+          aplayerDiv.style.boxShadow = 'none'
+          const hideSelectors = ['.aplayer-info', '.aplayer-pic', '.aplayer-buttons', '.aplayer-volume-bar', '.aplayer-list']
+          hideSelectors.forEach(sel => {
+            const els = aplayerDiv.querySelectorAll(sel)
+            els.forEach(el => el.style.display = 'none')
+          })
+        }
+
+        lyricPlayerRef.current = lyricPlayer
       }
-      const lyricPlayer = new APlayer({
-        container: lyricContainerRef.current,
-        audio: [audioObj],
-        lrcType: 3,          // 启用 lrc 歌词解析
-        autoplay: false,
-        preload: 'none',
-        showLrc: true,
-        theme: 'var(--endspace-accent-yellow)',
-        volume: 0,           // 静音，避免干扰主音频
-        fixed: false,
-        listFolded: true
-      })
-      // 隐藏控制栏（通过 CSS），只保留歌词区域
-      if (lyricPlayer.template) {
-        // 简单隐藏播放器控件，只保留 .aplayer-lrc
-        const aplayerDiv = lyricPlayer.template
-        aplayerDiv.style.background = 'transparent'
-        aplayerDiv.style.boxShadow = 'none'
-        // 隐藏除歌词外的其他元素
-        const otherElements = aplayerDiv.querySelectorAll('.aplayer-info, .aplayer-pic, .aplayer-buttons, .aplayer-volume-bar, .aplayer-list')
-        otherElements.forEach(el => el.style.display = 'none')
-      }
-      lyricPlayerRef.current = lyricPlayer
+    }
+
+    initLyricPlayer()
+
+    return () => {
+      isMounted = false
     }
   }, [currentAudio.lrc, embedded, isExpanded, currentAudio.name, currentAudio.artist, currentAudio.url])
 
-  // 监听主音频时间更新，同步到歌词播放器
+  // 监听主音频时间更新，同步到歌词播放器（始终绑定，内部判断）
   useEffect(() => {
-    if (!lyricPlayerRef.current) return
     const audio = getSharedAudio()
     if (!audio) return
 
