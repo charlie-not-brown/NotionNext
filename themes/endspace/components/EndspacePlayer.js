@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react' // 确保导入 useRef
 import { siteConfig } from '@/lib/config'
+import APlayer from 'aplayer' // 导入 APlayer
+import 'aplayer/dist/APlayer.min.css'
 import {
   IconPlayerPlay,
   IconPlayerPause,
@@ -10,7 +12,7 @@ import {
   IconVolume,
 } from '@tabler/icons-react'
 
-// ---------- 共享播放器核心（未改动）----------
+// ---------- 共享播放器核心（保持不变）----------
 let sharedAudio = null
 let sharedAudioList = []
 let sharedPlayOrder = 'list'
@@ -28,10 +30,7 @@ let sharedState = {
 const subscribers = new Set()
 
 const emitSharedState = (patch = {}) => {
-  sharedState = {
-    ...sharedState,
-    ...patch
-  }
+  sharedState = { ...sharedState, ...patch }
   subscribers.forEach(listener => listener(sharedState))
 }
 
@@ -52,9 +51,7 @@ const getSharedAudio = () => {
     playSharedTrack(getNextTrackIndex(), true)
   })
   sharedAudio.addEventListener('loadedmetadata', () => {
-    emitSharedState({
-      duration: sharedAudio?.duration || 0
-    })
+    emitSharedState({ duration: sharedAudio?.duration || 0 })
   })
   sharedAudio.addEventListener('play', () => {
     emitSharedState({ isPlaying: true })
@@ -79,9 +76,7 @@ const subscribeSharedPlayer = listener => {
   listener(sharedState)
   return () => {
     subscribers.delete(listener)
-    if (subscribers.size === 0) {
-      pauseSharedPlayer()
-    }
+    if (subscribers.size === 0) pauseSharedPlayer()
   }
 }
 
@@ -96,9 +91,7 @@ const configureSharedPlayer = (audioList, playOrder) => {
 
 const getNextTrackIndex = () => {
   if (sharedAudioList.length === 0) return 0
-  if (sharedPlayOrder === 'random') {
-    return Math.floor(Math.random() * sharedAudioList.length)
-  }
+  if (sharedPlayOrder === 'random') return Math.floor(Math.random() * sharedAudioList.length)
   return (sharedState.currentTrack + 1) % sharedAudioList.length
 }
 
@@ -127,18 +120,14 @@ const startProgressTimer = () => {
 
 const stopProgressTimer = () => {
   if (!progressTimer) return
-  if (typeof window !== 'undefined') {
-    window.clearInterval(progressTimer)
-  }
+  if (typeof window !== 'undefined') window.clearInterval(progressTimer)
   progressTimer = null
 }
 
 const pauseOtherMedia = () => {
   if (typeof document === 'undefined') return
   document.querySelectorAll('audio, video').forEach(media => {
-    if (media !== sharedAudio && !media.paused) {
-      media.pause()
-    }
+    if (media !== sharedAudio && !media.paused) media.pause()
   })
 }
 
@@ -151,9 +140,7 @@ const startMediaGuard = () => {
 
 const stopMediaGuard = () => {
   if (!mediaGuardTimer) return
-  if (typeof window !== 'undefined') {
-    window.clearInterval(mediaGuardTimer)
-  }
+  if (typeof window !== 'undefined') window.clearInterval(mediaGuardTimer)
   mediaGuardTimer = null
 }
 
@@ -173,9 +160,7 @@ const playSharedAudio = async () => {
 }
 
 const pauseSharedPlayer = () => {
-  if (sharedAudio) {
-    sharedAudio.pause()
-  }
+  if (sharedAudio) sharedAudio.pause()
   emitSharedState({ isPlaying: false })
   stopProgressTimer()
   stopMediaGuard()
@@ -190,9 +175,7 @@ const playSharedTrack = (index, shouldPlay = sharedState.isPlaying) => {
 
   const requestId = ++playRequestId
   audio.pause()
-  if (audio.src !== audioConfig.url) {
-    audio.src = audioConfig.url
-  }
+  if (audio.src !== audioConfig.url) audio.src = audioConfig.url
   audio.load()
   emitSharedState({
     currentTrack: safeIndex,
@@ -205,28 +188,25 @@ const playSharedTrack = (index, shouldPlay = sharedState.isPlaying) => {
   if (shouldPlay) {
     if (typeof window === 'undefined') return
     window.setTimeout(() => {
-      if (requestId === playRequestId) {
-        playSharedAudio()
-      }
+      if (requestId === playRequestId) playSharedAudio()
     }, 0)
   }
 }
 
-// ---------- 新增：MetingJS 歌单获取 ----------
+// ---------- MetingJS 歌单获取 ----------
 const fetchMetingPlaylist = async (server, id) => {
-  // 使用稳定可靠的 Meting API (i-meto)
   const apiUrl = `https://api.i-meto.com/meting/api?server=${server}&type=playlist&id=${id}`
   try {
     const response = await fetch(apiUrl)
     if (!response.ok) throw new Error(`HTTP ${response.status}`)
     const data = await response.json()
     if (!data || !Array.isArray(data)) throw new Error('Invalid response')
-    // 转换为 EndspacePlayer 期望的格式
     return data.map(item => ({
       name: item.title || item.name,
       artist: item.author || item.artist,
       url: item.url,
-      cover: item.pic || item.cover
+      cover: item.pic || item.cover,
+      lrc: item.lrc || null // 保留 lrc 字段
     }))
   } catch (error) {
     console.error('MetingJS fetch failed:', error)
@@ -234,12 +214,16 @@ const fetchMetingPlaylist = async (server, id) => {
   }
 }
 
-// ---------- 组件主体（增加 Meting 加载逻辑）----------
+// ---------- 组件主体 ----------
 export const EndspacePlayer = ({ isExpanded, embedded = false }) => {
   const [playerState, setPlayerState] = useState(sharedState)
   const [showPlaylist, setShowPlaylist] = useState(false)
-  const [metingAudioList, setMetingAudioList] = useState(null) // 歌单加载状态：null表示未加载，[]表示加载完成但为空
+  const [metingAudioList, setMetingAudioList] = useState(null)
   const [isLoadingMeting, setIsLoadingMeting] = useState(false)
+
+  // 歌词专用 ref
+  const lyricContainerRef = useRef(null)
+  const lyricPlayerRef = useRef(null)
 
   // 读取配置
   const musicPlayerEnabled = siteConfig('MUSIC_PLAYER')
@@ -251,25 +235,20 @@ export const EndspacePlayer = ({ isExpanded, embedded = false }) => {
   const metingServer = siteConfig('MUSIC_PLAYER_METING_SERVER') || 'netease'
   const metingId = siteConfig('MUSIC_PLAYER_METING_ID')
 
-  // 决定最终使用的音频列表
   const useMeting = metingEnabled && metingId && metingAudioList !== null
   const finalAudioList = useMeting ? (metingAudioList || []) : localAudioList
 
   const { isPlaying, currentTrack, progress, currentTime } = playerState
   const currentAudio = finalAudioList[currentTrack] || {}
 
-  // 加载 Meting 歌单（如果启用且尚未加载）
+  // 加载 Meting 歌单
   useEffect(() => {
     if (!musicPlayerEnabled) return
     if (metingEnabled && metingId && metingAudioList === null && !isLoadingMeting) {
       setIsLoadingMeting(true)
       fetchMetingPlaylist(metingServer, metingId).then(list => {
-        if (list && list.length > 0) {
-          setMetingAudioList(list)
-        } else {
-          // 空歌单或失败：设为空数组，避免重复请求
-          setMetingAudioList([])
-        }
+        if (list && list.length > 0) setMetingAudioList(list)
+        else setMetingAudioList([])
         setIsLoadingMeting(false)
       }).catch(() => {
         setMetingAudioList([])
@@ -278,14 +257,12 @@ export const EndspacePlayer = ({ isExpanded, embedded = false }) => {
     }
   }, [musicPlayerEnabled, metingEnabled, metingId, metingServer, metingAudioList, isLoadingMeting])
 
-  // 当最终列表变化时，重新配置共享播放器
+  // 配置共享播放器
   useEffect(() => {
     if (!musicPlayerEnabled) return
     if (finalAudioList.length === 0) return
     configureSharedPlayer(finalAudioList, playOrder)
     const unsubscribe = subscribeSharedPlayer(setPlayerState)
-
-    // 自动播放尝试（仅第一次有效）
     if (autoPlay && !hasTriedAutoPlay && finalAudioList.length > 0) {
       hasTriedAutoPlay = true
       playSharedTrack(sharedState.currentTrack, true)
@@ -295,17 +272,94 @@ export const EndspacePlayer = ({ isExpanded, embedded = false }) => {
 
   // 关闭 playlist 当侧边栏收起
   useEffect(() => {
-    if (!isExpanded) {
-      setShowPlaylist(false)
-    }
+    if (!isExpanded) setShowPlaylist(false)
   }, [isExpanded])
 
-  // 不渲染情况：播放器关闭、无音频列表、或正在加载 Meting 歌单
+  // ---------- 歌词同步相关 ----------
+  // 当歌曲切换或 lrc 变化时，重新初始化歌词 APlayer
+  useEffect(() => {
+    if (!embedded || !isExpanded) return
+    if (!currentAudio.lrc) {
+      // 如果没有歌词，销毁旧实例并清空容器
+      if (lyricPlayerRef.current) {
+        lyricPlayerRef.current.destroy()
+        lyricPlayerRef.current = null
+      }
+      if (lyricContainerRef.current) {
+        lyricContainerRef.current.innerHTML = ''
+      }
+      return
+    }
+
+    // 创建新的歌词 APlayer 实例（只显示歌词，不发声）
+    if (lyricContainerRef.current) {
+      // 销毁旧的
+      if (lyricPlayerRef.current) {
+        lyricPlayerRef.current.destroy()
+        lyricPlayerRef.current = null
+      }
+      // 构建音频对象，包含 lrc
+      const audioObj = {
+        name: currentAudio.name,
+        artist: currentAudio.artist,
+        url: currentAudio.url,   // 必须有一个 url 才能初始化，但不会播放（preload: 'none' 且不调用 play）
+        lrc: currentAudio.lrc
+      }
+      const lyricPlayer = new APlayer({
+        container: lyricContainerRef.current,
+        audio: [audioObj],
+        lrcType: 3,          // 启用 lrc 歌词解析
+        autoplay: false,
+        preload: 'none',
+        showLrc: true,
+        theme: 'var(--endspace-accent-yellow)',
+        volume: 0,           // 静音，避免干扰主音频
+        fixed: false,
+        listFolded: true
+      })
+      // 隐藏控制栏（通过 CSS），只保留歌词区域
+      if (lyricPlayer.template) {
+        // 简单隐藏播放器控件，只保留 .aplayer-lrc
+        const aplayerDiv = lyricPlayer.template
+        aplayerDiv.style.background = 'transparent'
+        aplayerDiv.style.boxShadow = 'none'
+        // 隐藏除歌词外的其他元素
+        const otherElements = aplayerDiv.querySelectorAll('.aplayer-info, .aplayer-pic, .aplayer-buttons, .aplayer-volume-bar, .aplayer-list')
+        otherElements.forEach(el => el.style.display = 'none')
+      }
+      lyricPlayerRef.current = lyricPlayer
+    }
+  }, [currentAudio.lrc, embedded, isExpanded, currentAudio.name, currentAudio.artist, currentAudio.url])
+
+  // 监听主音频时间更新，同步到歌词播放器
+  useEffect(() => {
+    if (!lyricPlayerRef.current) return
+    const audio = getSharedAudio()
+    if (!audio) return
+
+    const handleTimeUpdate = () => {
+      if (lyricPlayerRef.current) {
+        lyricPlayerRef.current.setCurrentTime(audio.currentTime)
+      }
+    }
+    audio.addEventListener('timeupdate', handleTimeUpdate)
+    return () => audio.removeEventListener('timeupdate', handleTimeUpdate)
+  }, []) // 只绑定一次
+
+  // 清理歌词播放器（组件卸载时）
+  useEffect(() => {
+    return () => {
+      if (lyricPlayerRef.current) {
+        lyricPlayerRef.current.destroy()
+        lyricPlayerRef.current = null
+      }
+    }
+  }, [])
+
   if (!musicPlayerEnabled) return null
-  if (isLoadingMeting) return null // 可改为 loading 占位符，此处直接隐藏
+  if (isLoadingMeting) return null
   if (finalAudioList.length === 0) return null
 
-  // 以下原有交互函数不变（它们使用共享播放器，不受影响）
   const togglePlay = (e) => {
     e.stopPropagation()
     if (isPlaying) {
@@ -353,7 +407,6 @@ export const EndspacePlayer = ({ isExpanded, embedded = false }) => {
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
-  // 渲染部分完全沿用原逻辑，只把 audioList 替换为 finalAudioList
   // Collapsed State
   if (!isExpanded) {
     return (
@@ -365,11 +418,7 @@ export const EndspacePlayer = ({ isExpanded, embedded = false }) => {
           {isPlaying ? (
             <>
               <div className="w-full h-full rounded-full overflow-hidden endspace-player-glow endspace-player-rotating">
-                <img 
-                  src={currentAudio.cover || '/default-cover.jpg'} 
-                  alt="Cover"
-                  className="w-full h-full object-cover"
-                />
+                <img src={currentAudio.cover || '/default-cover.jpg'} alt="Cover" className="w-full h-full object-cover" />
               </div>
               <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
                 <IconPlayerPause size={14} stroke={2} className="text-white" />
@@ -385,104 +434,127 @@ export const EndspacePlayer = ({ isExpanded, embedded = false }) => {
     )
   }
 
-  // Embedded mode (small sidebar player)
+  // Embedded mode (side bar expanded) - 增加歌词容器
   if (embedded) {
     return (
-      <div className="endspace-player-full relative flex h-full w-full items-center px-0.5">
-        {showPlaylist && (
-          <div className="absolute bottom-full left-0 right-0 mb-2 max-h-32 overflow-y-auto rounded-xl border border-gray-200 bg-gray-100/95 p-1 shadow-lg">
-            {finalAudioList.map((audio, index) => (
-              <button
-                key={index}
-                type="button"
-                onClick={() => selectTrack(index)}
-                className={`flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left transition-colors ${
-                  index === currentTrack
-                    ? 'bg-black text-white'
-                    : 'text-[var(--endspace-text-secondary)] hover:bg-gray-200 hover:text-black'
-                }`}
-              >
-                <span className="w-3 flex-shrink-0 text-center font-mono text-[9px] leading-none">
-                  {index + 1}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[10px] font-semibold leading-tight">
-                    {audio.name}
+      <div className="endspace-player-full relative flex flex-col w-full">
+        {/* 播放器控件行（原样） */}
+        <div className="flex h-full w-full items-center px-0.5">
+          {showPlaylist && (
+            <div className="absolute bottom-full left-0 right-0 mb-2 max-h-32 overflow-y-auto rounded-xl border border-gray-200 bg-gray-100/95 p-1 shadow-lg z-20">
+              {finalAudioList.map((audio, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => selectTrack(index)}
+                  className={`flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left transition-colors ${
+                    index === currentTrack
+                      ? 'bg-black text-white'
+                      : 'text-[var(--endspace-text-secondary)] hover:bg-gray-200 hover:text-black'
+                  }`}
+                >
+                  <span className="w-3 flex-shrink-0 text-center font-mono text-[9px] leading-none">{index + 1}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[10px] font-semibold leading-tight">{audio.name}</span>
+                    <span className={`block truncate text-[9px] leading-tight ${index === currentTrack ? 'text-white/70' : 'text-[var(--endspace-text-muted)]'}`}>
+                      {audio.artist || 'Unknown Artist'}
+                    </span>
                   </span>
-                  <span className={`block truncate text-[9px] leading-tight ${
-                    index === currentTrack ? 'text-white/70' : 'text-[var(--endspace-text-muted)]'
-                  }`}>
-                    {audio.artist || 'Unknown Artist'}
-                  </span>
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
-
-        <div className="flex min-w-0 flex-1 items-center gap-2">
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); setShowPlaylist(!showPlaylist) }}
-            className="group/cover relative flex h-10 w-10 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-white/70 text-[var(--endspace-text-muted)] transition-colors hover:text-black"
-            title="Playlist"
-          >
-            <img
-              src={currentAudio.cover || '/default-cover.jpg'}
-              alt="Cover"
-              className={`h-full w-full rounded-full object-cover transition-opacity ${showPlaylist ? 'opacity-20' : 'opacity-100 group-hover/cover:opacity-20'}`}
-            />
-            <span className={`absolute inset-0 flex items-center justify-center transition-opacity ${showPlaylist ? 'opacity-100' : 'opacity-0 group-hover/cover:opacity-100'}`}>
-              <IconList size={14} stroke={1.5} />
-            </span>
-          </button>
-
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-xs font-bold leading-tight text-[var(--endspace-text-primary)]">
-              {currentAudio.name || 'Unknown Track'}
+                </button>
+              ))}
             </div>
-            <div className="mt-0.5 truncate text-[10px] leading-tight text-[var(--endspace-text-muted)]">
-              {currentAudio.artist || formatTime(currentTime)}
-            </div>
-            <div className="mt-1 h-1 overflow-hidden rounded-full bg-gray-200" onClick={handleProgressClick}>
-              <div
-                className="h-full bg-[var(--endspace-accent-yellow)] transition-all duration-200"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-          </div>
+          )}
 
-          <div className="flex h-10 w-5 flex-shrink-0 flex-col items-center justify-between rounded-lg bg-gray-200/70 p-0.5 text-[var(--endspace-text-muted)]">
-            <button
-              onClick={playPrev}
-              className="flex h-3 w-4 items-center justify-center rounded transition-colors hover:bg-[var(--endspace-accent-yellow)] hover:text-black"
-              title="Previous"
-            >
-              <IconPlayerTrackPrev size={10} stroke={2} className="rotate-90" />
-            </button>
+          <div className="flex min-w-0 flex-1 items-center gap-2">
             <button
               type="button"
-              className={`flex h-3.5 w-4 items-center justify-center rounded transition-colors hover:bg-[var(--endspace-accent-yellow)] hover:text-black ${
-                isPlaying ? 'bg-[var(--endspace-accent-yellow)] text-black' : ''
-              }`}
-              onClick={togglePlay}
-              title={isPlaying ? 'Pause' : 'Play'}
+              onClick={(e) => { e.stopPropagation(); setShowPlaylist(!showPlaylist) }}
+              className="group/cover relative flex h-10 w-10 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-white/70 text-[var(--endspace-text-muted)] transition-colors hover:text-black"
+              title="Playlist"
             >
-              {isPlaying ? (
-                <IconPlayerPause size={14} stroke={2.5} />
-              ) : (
-                <IconPlayerPlay size={12} stroke={2.5} className="ml-0.5" />
-              )}
+              <img
+                src={currentAudio.cover || '/default-cover.jpg'}
+                alt="Cover"
+                className={`h-full w-full rounded-full object-cover transition-opacity ${showPlaylist ? 'opacity-20' : 'opacity-100 group-hover/cover:opacity-20'}`}
+              />
+              <span className={`absolute inset-0 flex items-center justify-center transition-opacity ${showPlaylist ? 'opacity-100' : 'opacity-0 group-hover/cover:opacity-100'}`}>
+                <IconList size={14} stroke={1.5} />
+              </span>
             </button>
-            <button
-              onClick={playNext}
-              className="flex h-3 w-4 items-center justify-center rounded transition-colors hover:bg-[var(--endspace-accent-yellow)] hover:text-black"
-              title="Next"
-            >
-              <IconPlayerTrackNext size={10} stroke={2} className="rotate-90" />
-            </button>
+
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-xs font-bold leading-tight text-[var(--endspace-text-primary)]">
+                {currentAudio.name || 'Unknown Track'}
+              </div>
+              <div className="mt-0.5 truncate text-[10px] leading-tight text-[var(--endspace-text-muted)]">
+                {currentAudio.artist || formatTime(currentTime)}
+              </div>
+              <div className="mt-1 h-1 overflow-hidden rounded-full bg-gray-200" onClick={handleProgressClick}>
+                <div className="h-full bg-[var(--endspace-accent-yellow)] transition-all duration-200" style={{ width: `${progress}%` }} />
+              </div>
+            </div>
+
+            <div className="flex h-10 w-5 flex-shrink-0 flex-col items-center justify-between rounded-lg bg-gray-200/70 p-0.5 text-[var(--endspace-text-muted)]">
+              <button onClick={playPrev} className="flex h-3 w-4 items-center justify-center rounded transition-colors hover:bg-[var(--endspace-accent-yellow)] hover:text-black" title="Previous">
+                <IconPlayerTrackPrev size={10} stroke={2} className="rotate-90" />
+              </button>
+              <button
+                type="button"
+                className={`flex h-3.5 w-4 items-center justify-center rounded transition-colors hover:bg-[var(--endspace-accent-yellow)] hover:text-black ${
+                  isPlaying ? 'bg-[var(--endspace-accent-yellow)] text-black' : ''
+                }`}
+                onClick={togglePlay}
+                title={isPlaying ? 'Pause' : 'Play'}
+              >
+                {isPlaying ? <IconPlayerPause size={14} stroke={2.5} /> : <IconPlayerPlay size={12} stroke={2.5} className="ml-0.5" />}
+              </button>
+              <button onClick={playNext} className="flex h-3 w-4 items-center justify-center rounded transition-colors hover:bg-[var(--endspace-accent-yellow)] hover:text-black" title="Next">
+                <IconPlayerTrackNext size={10} stroke={2} className="rotate-90" />
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* 歌词容器 - 由 APlayer 自动渲染同步歌词 */}
+        <div 
+          ref={lyricContainerRef} 
+          className="lyric-panel mt-1 w-full border-t border-gray-200 pt-1 text-[10px]"
+        />
+
+        {/* 隐藏 APlayer 控件的样式（只保留歌词） */}
+        <style jsx>{`
+          :global(.lyric-panel .aplayer) {
+            background: transparent !important;
+            box-shadow: none !important;
+          }
+          :global(.lyric-panel .aplayer-info) {
+            display: none !important;
+          }
+          :global(.lyric-panel .aplayer-pic) {
+            display: none !important;
+          }
+          :global(.lyric-panel .aplayer-list) {
+            display: none !important;
+          }
+          :global(.lyric-panel .aplayer-volume-bar) {
+            display: none !important;
+          }
+          :global(.lyric-panel .aplayer-lrc) {
+            margin: 0 !important;
+            padding: 0 !important;
+            font-size: 10px !important;
+            line-height: 1.4 !important;
+            color: var(--endspace-text-muted) !important;
+          }
+          :global(.lyric-panel .aplayer-lrc p) {
+            font-size: 10px !important;
+            line-height: 1.4 !important;
+          }
+          :global(.lyric-panel .aplayer-lrc-current) {
+            color: var(--endspace-accent-yellow) !important;
+            font-weight: 500 !important;
+          }
+        `}</style>
       </div>
     )
   }
