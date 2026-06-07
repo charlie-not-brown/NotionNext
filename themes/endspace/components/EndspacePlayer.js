@@ -193,49 +193,41 @@ const playSharedTrack = (index, shouldPlay = sharedState.isPlaying) => {
 
 // ---------- MetingJS 歌单获取 ----------
 const fetchMetingPlaylist = async (server, id) => {
-  const apiUrl = `https://api.i-meto.com/meting/api?server=${server}&type=playlist&id=${id}`
+  const playlistUrl = `https://api.i-meto.com/meting/api?server=${server}&type=playlist&id=${id}`
   try {
-    const response = await fetch(apiUrl)
+    const response = await fetch(playlistUrl)
     if (!response.ok) throw new Error(`HTTP ${response.status}`)
     const data = await response.json()
     if (!data || !Array.isArray(data)) throw new Error('Invalid response')
-    return data.map(item => ({
-      name: item.title || item.name,
-      artist: item.author || item.artist,
-      url: item.url,
-      cover: item.pic || item.cover,
-      lrc: item.lrc || null // 保留 lrc 字段
+
+    // 对歌单中的每首歌，单独请求一次歌词
+    const songsWithLyrics = await Promise.all(data.map(async (item) => {
+      const songId = item.songid || item.id // 根据实际返回的字段名调整
+      const lrcUrl = `https://api.i-meto.com/meting/api?server=${server}&type=lyric&id=${songId}`
+      let lrc = null
+      try {
+        const lrcRes = await fetch(lrcUrl)
+        if (lrcRes.ok) {
+          const lrcData = await lrcRes.json()
+          lrc = lrcData.lyric || null
+        }
+      } catch (err) {
+        console.warn(`获取歌词失败 (ID: ${songId}):`, err)
+      }
+      return {
+        name: item.title || item.name,
+        artist: item.author || item.artist,
+        url: item.url,
+        cover: item.pic || item.cover,
+        lrc: lrc
+      }
     }))
+
+    return songsWithLyrics
   } catch (error) {
     console.error('MetingJS fetch failed:', error)
     return null
   }
-}
-
-let aplayerLoaded = false
-const loadAPlayer = () => {
-  return new Promise((resolve) => {
-    if (typeof window === 'undefined') return resolve(false)
-    if (window.APlayer) {
-      aplayerLoaded = true
-      return resolve(true)
-    }
-    if (aplayerLoaded) return resolve(true)
-
-    const cssLink = document.createElement('link')
-    cssLink.rel = 'stylesheet'
-    cssLink.href = 'https://cdn.jsdelivr.net/npm/aplayer@1.10.0/dist/APlayer.min.css'
-    document.head.appendChild(cssLink)
-
-    const script = document.createElement('script')
-    script.src = 'https://cdn.jsdelivr.net/npm/aplayer@1.10.0/dist/APlayer.min.js'  // 直接写死
-    script.onload = () => {
-      aplayerLoaded = true
-      resolve(true)
-    }
-    script.onerror = () => resolve(false)
-    document.head.appendChild(script)
-  })
 }
 
 // ---------- 组件主体 ----------
