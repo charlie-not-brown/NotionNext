@@ -26,7 +26,27 @@ export const LoadingCover = () => {
   const textSweeping = siteConfig('ENDSPACE_LOADING_TEXT_SWEEPING', 'LAUNCHING', CONFIG)
   const textFadeout = siteConfig('ENDSPACE_LOADING_TEXT_FADEOUT', 'WELCOME', CONFIG)
   // Custom Loading Image
-  const loadingImage = siteConfig('ENDSPACE_LOADING_IMAGE', null, CONFIG)
+  const loadingImageSingle = siteConfig('ENDSPACE_LOADING_IMAGE', null, CONFIG)
+  const loadingImageConfig = siteConfig('ENDSPACE_LOADING_IMAGES', [], CONFIG)
+  const [loadingImage, setLoadingImage] = useState(null)
+
+  useEffect(() => {
+    const loadingImageList = Array.isArray(loadingImageConfig)
+      ? loadingImageConfig.filter(Boolean)
+      : String(loadingImageConfig || '')
+          .split(',')
+          .map(item => item.trim())
+          .filter(Boolean)
+
+    const randomImage = loadingImageList.length > 0
+      ? loadingImageList[Math.floor(Math.random() * loadingImageList.length)]
+      : loadingImageSingle
+
+    setLoadingImage(randomImage)
+
+    // 只在加载页首次出现时随机一次，不要随着渲染反复换图
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Resource loading tracking and smooth animation
   useEffect(() => {
