@@ -48,6 +48,12 @@ const CONFIG = {
   // 加载动画中的图片，可以使用public目录下的图片如'/images/logo.png'，也可以使用url如https://example.com/image.png
   ENDSPACE_LOADING_IMAGE: '', // 加载动画中显示的图片（默认使用站点 favicon SVG）
 
+  ENDSPACE_LOADING_IMAGES: [
+    '/images/loading/loading-01.gif',
+    '/images/loading/loading-02.gif',
+    '/images/loading/loading-03.png'
+  ],
+
   // ============================================
   // 水印文字配置 (Watermark Text)
   // ============================================
