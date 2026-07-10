@@ -49,13 +49,13 @@ const CONFIG = {
   ENDSPACE_LOADING_IMAGE: '', // 加载动画中显示的图片（默认使用站点 favicon SVG）
 
   ENDSPACE_LOADING_IMAGES: [
-    '/images/loading/13.PNG',
-    '/images/loading/23.png',
-    '/images/loading/34.png',
-    '/images/loading/B3.PNG',
-    '/images/loading/family.PNG',
-    '/images/loading/tt.PNG',
-    '/images/loading/work.PNG'
+    '/images/loading/13.webp',
+    '/images/loading/23.webp',
+    '/images/loading/34.webp',
+    '/images/loading/B3.webp',
+    '/images/loading/family.webp',
+    '/images/loading/tt.webp',
+    '/images/loading/work.webp'
   ],
 
   // ============================================
