@@ -3,7 +3,7 @@ import CONFIG from '../config'
 
 const isClassIcon = icon =>
   typeof icon === 'string' &&
-  /(^|\s)(fa[srldb]?|fa-|iconfont|ri-|remixicon)/.test(icon.trim())
+  /(^|\s)(fa[srldb]?|fa-|iconfont|icon-|ri-|remixicon)/.test(icon.trim())
 
 const normalizeIcon = link => {
   const iconField = link?.icon || ''
