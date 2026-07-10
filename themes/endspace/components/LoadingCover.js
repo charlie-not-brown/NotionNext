@@ -41,7 +41,7 @@ export const LoadingCover = () => {
     const randomImage = loadingImageList.length > 0
       ? loadingImageList[Math.floor(Math.random() * loadingImageList.length)]
       : loadingImageSingle
-
+    
     setLoadingImage(randomImage)
 
     // 只在加载页首次出现时随机一次，不要随着渲染反复换图
@@ -168,8 +168,15 @@ export const LoadingCover = () => {
       {/* Center - Loading Image and Site Name (horizontal, stacked) */}
       <div className="center-content">
         {loadingImage && (
-          <img src={loadingImage} alt="Loading" className="loading-image" />
+          <img
+            src={loadingImage}
+            alt="Loading"
+            className="loading-image"
+            loading="eager"
+            fetchPriority="high"
+          />
         )}
+              
         <div className="site-name">
           {siteName}
         </div>
