@@ -50,8 +50,8 @@ const CONFIG = {
 
   ENDSPACE_LOADING_IMAGES: [
     '/images/loading/13.PNG',
-    '/images/loading/23.PNG',
-    '/images/loading/34.PNG',
+    '/images/loading/23.png',
+    '/images/loading/34.png',
     '/images/loading/B3.PNG',
     '/images/loading/family.PNG',
     '/images/loading/tt.PNG',
