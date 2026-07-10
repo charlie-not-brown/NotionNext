@@ -41,6 +41,7 @@ const SocialIconComponents = {
 export const MobileNav = (props) => {
   const router = useRouter()
   const { siteInfo } = useGlobal()
+  const { customNav, customMenu } = props
   const [activeTab, setActiveTab] = useState('Home')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const emailIcon = useRef(null)
