@@ -9,6 +9,84 @@ import { useEffect, useRef } from 'react'
 import { NotionRenderer, useNotionContext } from 'react-notion-x'
 
 /**
+ * Notion 自定义 Emoji 映射表
+ *
+ * 左边：Notion Custom Emoji ID
+ * 右边：本站 public 目录下的图片路径
+ */
+const CUSTOM_EMOJI_MAP = {
+  // Cassandra Cain
+  '2c9ff97e-5407-80f8-b7b0-007a6f023039':
+    '/images/notion-icons/cassandra.webp',
+
+  // Batman 1
+  '2c8ff97e-5407-80f0-8662-007a9845c472':
+    '/images/notion-icons/batman1.webp',
+
+  // Batman Logo 2000-2011
+  '2c9ff97e-5407-8025-9136-007a7c20940b':
+    '/images/notion-icons/Batman-Logo-2000-2011.webp',
+
+  // Detective Comics
+  '2c9ff97e-5407-80e6-b0c3-007adaecfbdd':
+    '/images/notion-icons/Detective-Comics.webp',
+
+  // Nightwing
+  '2c9ff97e-5407-80d0-ad42-007a33a9fa94':
+    '/images/notion-icons/nightwing.webp',
+
+  // Red Robin
+  '2c8ff97e-5407-80ae-be28-007af2cfeac4':
+    '/images/notion-icons/red-robin.webp',
+
+  // Robin - Tim Drake
+  '2c8ff97e-5407-80bd-8830-007a8ec587ab':
+    '/images/notion-icons/robin-timdrake.webp',
+
+  // Teen Titans
+  '2caff97e-5407-8031-9797-007a0febd278':
+    '/images/notion-icons/Teen-Titans.webp',
+
+  // Teen Titans 2
+  '2c9ff97e-5407-803d-a9ed-007ad2083d1d':
+    '/images/notion-icons/Teen-Titans2.webp',
+
+  // Young Justice
+  '2c8ff97e-5407-8028-91ec-007a048af5f8':
+    '/images/notion-icons/yj.webp',
+
+  // Young Justice V3
+  '2caff97e-5407-8072-b1a0-007aa8e9f049':
+    '/images/notion-icons/yj-v3.webp'
+}
+
+/**
+ * 专门处理 Notion 自定义 Emoji。
+ *
+ * 普通图片继续交给原有的 mapImgUrl；
+ * notion://custom_emoji/ 地址则提取 Emoji ID，
+ * 再替换成本站 public 目录中的图片。
+ */
+const mapNotionImageUrl = (img, block) => {
+  if (
+    typeof img === 'string' &&
+    img.startsWith('notion://custom_emoji/')
+  ) {
+    const match = img.match(
+      /^notion:\/\/custom_emoji\/[^/]+\/([^?]+)/
+    )
+
+    const emojiId = match?.[1]
+
+    if (emojiId && CUSTOM_EMOJI_MAP[emojiId]) {
+      return CUSTOM_EMOJI_MAP[emojiId]
+    }
+  }
+
+  return mapImgUrl(img, block)
+}
+
+/**
  * 整个站点的核心组件
  * 将Notion数据渲染成网页
  * @param {*} param0
@@ -116,7 +194,7 @@ const NotionPage = ({ post, className }) => {
       <NotionRenderer
         recordMap={post?.blockMap}
         mapPageUrl={mapPageUrl}
-        mapImageUrl={mapImgUrl}
+        mapImageUrl={mapNotionImageUrl}
         components={{
           Code,
           Collection,
