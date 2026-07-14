@@ -92,11 +92,58 @@ const mapNotionImageUrl = (img, block) => {
  * @param {*} param0
  * @returns
  */
+/**
+ * 修复 react-notion-x 7.10.0 的 Notion Button 动作解析问题。
+ *
+ * Notion 的 automation / automation_action 数据可能存在
+ * value.value 双层甚至更多层包装，而 7.10.0 只读取一层 value。
+ * 这里提前递归解包，再恢复成 react-notion-x 7.10.0 能识别的一层结构。
+ */
+const unwrapNotionValue = record => {
+  if (!record) return record
+
+  if (
+    typeof record === 'object' &&
+    Object.prototype.hasOwnProperty.call(record, 'value')
+  ) {
+    return unwrapNotionValue(record.value)
+  }
+
+  return record
+}
+
+const normalizeNotionButtonActions = blockMap => {
+  if (!blockMap) return blockMap
+
+  const normalizeTable = table => {
+    if (!table) return table
+
+    return Object.fromEntries(
+      Object.entries(table).map(([id, record]) => [
+        id,
+        {
+          ...record,
+          value: unwrapNotionValue(record)
+        }
+      ])
+    )
+  }
+
+  return {
+    ...blockMap,
+    automation: normalizeTable(blockMap.automation),
+    automation_action: normalizeTable(blockMap.automation_action)
+  }
+}
+
 const NotionPage = ({ post, className }) => {
   // 是否关闭数据库和画册的点击跳转
   const POST_DISABLE_GALLERY_CLICK = siteConfig('POST_DISABLE_GALLERY_CLICK')
   const POST_DISABLE_DATABASE_CLICK = siteConfig('POST_DISABLE_DATABASE_CLICK')
   const SPOILER_TEXT_TAG = siteConfig('SPOILER_TEXT_TAG')
+
+  // 修复 Notion Button 的 automation / automation_action 双层 value 包装
+  const notionRecordMap = normalizeNotionButtonActions(post?.blockMap)
 
   const zoomRef = useRef(null)
   const IMAGE_ZOOM_IN_WIDTH = siteConfig('IMAGE_ZOOM_IN_WIDTH', 1200)
@@ -192,7 +239,7 @@ const NotionPage = ({ post, className }) => {
       id='notion-article'
       className={`mx-auto overflow-hidden ${className || ''}`}>
       <NotionRenderer
-        recordMap={post?.blockMap}
+        recordMap={notionRecordMap}
         mapPageUrl={mapPageUrl}
         mapImageUrl={mapNotionImageUrl}
         components={{
