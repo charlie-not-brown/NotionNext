@@ -30,6 +30,7 @@ import replaceEndspaceSearchResult from './components/searchHighlight'
 import CONFIG from './config'
 import { Style } from './style'
 import { IconLoader2 } from '@tabler/icons-react'
+import TimBirthdayOverlay from './components/TimBirthdayOverlay'
 
 /**
  * Endspace Theme - Endfield Style
@@ -91,6 +92,9 @@ const LayoutBase = (props) => {
 
       {/* Loading animation */}
       {LOADING_COVER && <LoadingCover />}
+
+      {/* Tim Drake Birthday Celebration */}
+      <TimBirthdayOverlay />
 
       {/* Left vertical navigation (desktop) */}
       <SideNav {...props} />
