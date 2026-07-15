@@ -789,23 +789,7 @@ const TimBirthdayOverlay = () => {
 
           pointer-events: none;
 
-          filter:
-            drop-shadow(1px 0 0 #FFE4B5)
-            drop-shadow(-1px 0 0 #FFE4B5)
-            drop-shadow(0 1px 0 #FFE4B5)
-            drop-shadow(0 -1px 0 #FFE4B5)
-            drop-shadow(1px 1px 0 #FFE4B5)
-            drop-shadow(-1px 1px 0 #FFE4B5)
-            drop-shadow(1px -1px 0 #FFE4B5)
-            drop-shadow(-1px -1px 0 #FFE4B5)
-            drop-shadow(2px 0 0 #FFE4B5)
-            drop-shadow(-2px 0 0 #FFE4B5)
-            drop-shadow(0 2px 0 #FFE4B5)
-            drop-shadow(0 -2px 0 #FFE4B5)
-            drop-shadow(2px 2px 0 #FFE4B5)
-            drop-shadow(-2px 2px 0 #FFE4B5)
-            drop-shadow(2px -2px 0 #FFE4B5)
-            drop-shadow(-2px -2px 0 #FFE4B5);
+          border: 4px solid #FFE4B5;
         }
 
           /*
