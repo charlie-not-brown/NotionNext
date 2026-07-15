@@ -790,14 +790,22 @@ const TimBirthdayOverlay = () => {
           pointer-events: none;
 
           filter:
-            drop-shadow(2px 0 0 ＃FFE4B5)
-            drop-shadow(-2px 0 0 ＃FFE4B5)
-            drop-shadow(0 2px 0 ＃FFE4B5)
-            drop-shadow(0 -2px 0 ＃FFE4B5)
-            drop-shadow(2px 2px 0 ＃FFE4B5)
-            drop-shadow(-2px 2px 0 ＃FFE4B5)
-            drop-shadow(2px -2px 0 ＃FFE4B5)
-            drop-shadow(-2px -2px 0 ＃FFE4B5);
+            drop-shadow(1px 0 0 #FFE4B5)
+            drop-shadow(-1px 0 0 #FFE4B5)
+            drop-shadow(0 1px 0 #FFE4B5)
+            drop-shadow(0 -1px 0 #FFE4B5)
+            drop-shadow(1px 1px 0 #FFE4B5)
+            drop-shadow(-1px 1px 0 #FFE4B5)
+            drop-shadow(1px -1px 0 #FFE4B5)
+            drop-shadow(-1px -1px 0 #FFE4B5)
+            drop-shadow(2px 0 0 #FFE4B5)
+            drop-shadow(-2px 0 0 #FFE4B5)
+            drop-shadow(0 2px 0 #FFE4B5)
+            drop-shadow(0 -2px 0 #FFE4B5)
+            drop-shadow(2px 2px 0 #FFE4B5)
+            drop-shadow(-2px 2px 0 #FFE4B5)
+            drop-shadow(2px -2px 0 #FFE4B5)
+            drop-shadow(-2px -2px 0 #FFE4B5);
         }
 
           /*
@@ -829,12 +837,12 @@ const TimBirthdayOverlay = () => {
 
           font-size:
             clamp(
-              1.15rem,
-              2.4vw,
-              1.75rem
+              1.35rem,
+              3vw,
+              2rem
             );
 
-          font-weight: 600;
+          font-weight: 700;
           line-height: 1.5;
 
           letter-spacing: 0.12em;
