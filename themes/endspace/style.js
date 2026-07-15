@@ -255,6 +255,13 @@ export const Style = () => {
         line-height: 1.75;
       }
 
+      /* 隐藏 Notion 画廊卡片标题前的小图标 */
+      #theme-endspace #notion-article
+      .notion-collection-card-body
+      .notion-page-icon-inline {
+        display: none !important;
+      }
+
       #theme-endspace #article-wrapper,
       #theme-endspace #notion-article,
       #theme-endspace #notion-article .notion,
