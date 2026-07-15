@@ -1,5 +1,5 @@
-// import { siteConfig } from '@/lib/config'
-import { IconClock, IconRefresh, IconFolder, IconFileText } from '@tabler/icons-react'
+import { siteConfig } from '@/lib/config'
+import { IconClock, IconRefresh, IconFolder, IconFileText,IconUser } from '@tabler/icons-react'
 
 /**
  * PostMeta Component - Minimalist Light Industrial
@@ -35,6 +35,16 @@ export const PostMeta = ({ post }) => {
             <div className="flex items-center gap-2">
                 <IconClock size={14} stroke={1.5} className="text-[var(--endspace-text-muted)]" />
                 <span>{post.publishDay}</span>
+            </div>
+
+            {/* Author */}
+            <div className="flex items-center gap-2">
+              <IconUser
+                size={14}
+                stroke={1.5}
+                className="text-[var(--endspace-text-muted)]"
+              />
+              <span>{post?.author || siteConfig('AUTHOR')}</span>
             </div>
 
             {/* Last Update Time */}
