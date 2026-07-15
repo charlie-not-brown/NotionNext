@@ -793,21 +793,6 @@ const TimBirthdayOverlay = () => {
           background: #ffffff;
         }
 
-          /*
-           * 非常轻的阴影，
-           * 让图片和模糊背景稍微分离。
-           */
-          filter:
-            drop-shadow(
-              0 12px 28px
-              rgba(0, 0, 0, 0.12)
-            )
-            drop-shadow(
-              0 2px 8px
-              rgba(255, 255, 255, 0.2)
-            );
-        }
-
         /* ==========================================
          * 生日祝福文字
          * ========================================== */
@@ -820,37 +805,12 @@ const TimBirthdayOverlay = () => {
            */
           color: #171717;
 
-          font-size:
-            clamp(
-              1.35rem,
-              3vw,
-              2rem
-            );
+          font-size:clamp(1.35rem, 3vw, 2rem);
 
           font-weight: 700;
           line-height: 1.5;
 
           letter-spacing: 0.12em;
-
-          /*
-           * 只留非常轻的白色柔光，
-           * 避免出现沉重的黑色阴影。
-           */
-          text-shadow:
-            0 1px 2px
-              rgba(
-                255,
-                255,
-                255,
-                0.9
-              ),
-            0 4px 18px
-              rgba(
-                255,
-                255,
-                255,
-                0.45
-              );
         }
 
         /* ==========================================
