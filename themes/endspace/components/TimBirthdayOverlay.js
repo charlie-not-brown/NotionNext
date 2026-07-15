@@ -790,6 +790,7 @@ const TimBirthdayOverlay = () => {
           pointer-events: none;
 
           border: 4px solid #FFE4B5;
+          background: #ffffff;
         }
 
           /*
