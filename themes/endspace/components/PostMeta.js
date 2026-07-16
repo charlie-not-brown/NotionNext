@@ -1,5 +1,5 @@
 import { siteConfig } from '@/lib/config'
-import { IconClock, IconRefresh, IconFolder, IconFileText,IconUser } from '@tabler/icons-react'
+import { IconClock, IconRefresh, IconFolder, IconFileText } from '@tabler/icons-react'
 
 /**
  * PostMeta Component - Minimalist Light Industrial
@@ -9,6 +9,11 @@ import { IconClock, IconRefresh, IconFolder, IconFileText,IconUser } from '@tabl
  */
 export const PostMeta = ({ post }) => {
   if (!post) return null
+
+  const author =
+    typeof post.author === 'string'
+      ? post.author.trim()
+      : ''
 
   return (
     <div className="mb-10 w-full">
@@ -46,6 +51,18 @@ export const PostMeta = ({ post }) => {
               />
               <span>{post?.author || siteConfig('AUTHOR')}</span>
             </div>
+
+            {/* Author：只有 Notion 填写 author 时才显示 */}
+            {author && (
+              <div className="flex items-center gap-2">
+                <IconUser
+                  size={14}
+                  stroke={1.5}
+                  className="text-[var(--endspace-text-muted)]"
+                />
+                <span>{author}</span>
+              </div>
+            )}
 
             {/* Last Update Time */}
             {post.lastEditedDay && post.lastEditedDay !== post.publishDay && (

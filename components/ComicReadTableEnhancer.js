@@ -14,16 +14,13 @@ const VALID_STATUSES = [
 
 const STATUS_META = {
   want: {
-    label: '想读',
-    group: '待办'
+    label: '想读'
   },
   reading: {
-    label: '在读',
-    group: '进行中'
+    label: '在读'
   },
   finished: {
-    label: '读完',
-    group: '已完成'
+    label: '读完'
   }
 }
 
@@ -39,7 +36,7 @@ const STATUS_ORDER = [
 let closeActiveStatusMenu = null
 
 /**
- * 读取浏览器里保存的阅读状态。
+ * 读取当前浏览器保存的阅读状态。
  */
 const getSavedState = () => {
   if (typeof window === 'undefined') {
@@ -48,7 +45,9 @@ const getSavedState = () => {
 
   try {
     const currentData =
-      window.localStorage.getItem(STORAGE_KEY)
+      window.localStorage.getItem(
+        STORAGE_KEY
+      )
 
     if (currentData) {
       const parsed = JSON.parse(currentData)
@@ -60,7 +59,7 @@ const getSavedState = () => {
     }
 
     /*
-     * 自动迁移旧版复选框数据：
+     * 自动迁移此前 checkbox 的测试数据：
      *
      * true → finished（读完）
      */
@@ -81,7 +80,8 @@ const getSavedState = () => {
       of Object.entries(oldState)
     ) {
       if (checked === true) {
-        migratedState[comicId] = 'finished'
+        migratedState[comicId] =
+          'finished'
       }
     }
 
@@ -93,7 +93,8 @@ const getSavedState = () => {
     return migratedState
   } catch (error) {
     console.warn(
-      '[ComicReadTableEnhancer] 读取状态失败',
+      '[ComicReadTableEnhancer] ' +
+        '读取状态失败',
       error
     )
 
@@ -102,11 +103,15 @@ const getSavedState = () => {
 }
 
 /**
- * 保存一本漫画的阅读状态。
+ * 保存某一本漫画的阅读状态。
  *
- * 空字符串代表清除状态。
+ * status 为空字符串时，
+ * 删除该漫画的阅读状态。
  */
-const saveState = (comicId, status) => {
+const saveState = (
+  comicId,
+  status
+) => {
   if (!comicId) {
     return false
   }
@@ -114,7 +119,9 @@ const saveState = (comicId, status) => {
   try {
     const state = getSavedState()
 
-    if (VALID_STATUSES.includes(status)) {
+    if (
+      VALID_STATUSES.includes(status)
+    ) {
       state[comicId] = status
     } else {
       delete state[comicId]
@@ -128,7 +135,8 @@ const saveState = (comicId, status) => {
     return true
   } catch (error) {
     console.warn(
-      '[ComicReadTableEnhancer] 保存状态失败',
+      '[ComicReadTableEnhancer] ' +
+        '保存状态失败',
       error
     )
 
@@ -137,34 +145,96 @@ const saveState = (comicId, status) => {
 }
 
 /**
- * 从表格行的链接中提取漫画条目的 Notion pageId。
+ * 将可能带横杠的 Notion pageId
+ * 统一转换成 32 位小写 ID。
  */
-const getComicIdFromRow = (row, index) => {
-  const link = row.querySelector('a[href]')
+const normalizeComicId = value => {
+  if (!value) {
+    return null
+  }
 
-  if (link) {
-    const href =
-      link.getAttribute('href') || ''
+  const compact = String(value)
+    .replace(/-/g, '')
+    .toLowerCase()
 
-    const path = href
-      .split('?')[0]
-      .split('#')[0]
-      .replace(/^\/+/, '')
+  return /^[a-f0-9]{32}$/.test(compact)
+    ? compact
+    : null
+}
 
-    const possibleId =
-      path.split('/').pop()
+/**
+ * 自动读取当前漫画行的 Notion pageId。
+ *
+ * 不需要手工收集任何漫画 ID。
+ */
+const getComicIdFromRow = (
+  row,
+  index
+) => {
+  /*
+   * 优先尝试从行的 className 中读取。
+   */
+  for (
+    const className
+    of row.classList
+  ) {
+    const comicId =
+      normalizeComicId(className)
 
-    if (
-      possibleId &&
-      /^[a-f0-9]{32}$/i.test(possibleId)
-    ) {
-      return possibleId.toLowerCase()
+    if (comicId) {
+      return comicId
     }
   }
 
   /*
-   * 如果数据库链接被移除了 href，
-   * 则使用标题作为稳定的备用标识。
+   * 再尝试从 data 属性中读取。
+   */
+  const possibleDatasetIds = [
+    row.dataset.blockId,
+    row.dataset.id,
+    row.getAttribute(
+      'data-block-id'
+    )
+  ]
+
+  for (
+    const possibleId
+    of possibleDatasetIds
+  ) {
+    const comicId =
+      normalizeComicId(possibleId)
+
+    if (comicId) {
+      return comicId
+    }
+  }
+
+  /*
+   * 再尝试从行内链接读取 pageId。
+   */
+  const links =
+    row.querySelectorAll('a[href]')
+
+  for (const link of links) {
+    const href =
+      link.getAttribute('href') || ''
+
+    const match = href.match(
+      /([a-f0-9-]{32,36})(?:[/?#]|$)/i
+    )
+
+    if (match?.[1]) {
+      const comicId =
+        normalizeComicId(match[1])
+
+      if (comicId) {
+        return comicId
+      }
+    }
+  }
+
+  /*
+   * 最后使用漫画标题作为备用 ID。
    */
   const title =
     row
@@ -184,7 +254,7 @@ const getComicIdFromRow = (row, index) => {
 }
 
 /**
- * 删除组件插入的状态列。
+ * 删除组件插入的状态列和菜单。
  */
 const removeEnhancement = root => {
   closeActiveStatusMenu?.()
@@ -203,9 +273,10 @@ const removeEnhancement = root => {
 }
 
 /**
- * 在表格单元格中绘制当前状态。
+ * 绘制状态单元格。
  *
- * 没有状态时，按钮保持空白。
+ * 没有状态时保持空白；
+ * 选择状态后显示彩色胶囊。
  */
 const renderStatusTrigger = (
   trigger,
@@ -213,14 +284,16 @@ const renderStatusTrigger = (
 ) => {
   trigger.replaceChildren()
 
-  trigger.dataset.status = status || ''
+  trigger.dataset.status =
+    status || ''
 
   trigger.classList.toggle(
     'is-empty',
     !status
   )
 
-  const statusMeta = STATUS_META[status]
+  const statusMeta =
+    STATUS_META[status]
 
   if (!statusMeta) {
     trigger.setAttribute(
@@ -238,7 +311,8 @@ const renderStatusTrigger = (
     `当前状态：${statusMeta.label}`
   )
 
-  trigger.title = statusMeta.label
+  trigger.title =
+    statusMeta.label
 
   const pill =
     document.createElement('span')
@@ -249,12 +323,14 @@ const renderStatusTrigger = (
   const dot =
     document.createElement('span')
 
-  dot.className = 'comic-status-dot'
+  dot.className =
+    'comic-status-dot'
 
   const label =
     document.createElement('span')
 
-  label.textContent = statusMeta.label
+  label.textContent =
+    statusMeta.label
 
   pill.appendChild(dot)
   pill.appendChild(label)
@@ -263,28 +339,37 @@ const renderStatusTrigger = (
 }
 
 /**
- * 创建 Notion 风格状态选择器。
+ * 创建状态胶囊和弹出菜单。
  */
 const createStatusPicker = ({
   comicId,
   currentStatus,
   onChange
 }) => {
-  let status = currentStatus || ''
+  let status =
+    currentStatus || ''
+
   let menuOpen = false
 
   const trigger =
     document.createElement('button')
 
   trigger.type = 'button'
+
   trigger.className =
     'comic-status-trigger'
 
-  renderStatusTrigger(trigger, status)
+  trigger.dataset.comicId =
+    comicId
+
+  renderStatusTrigger(
+    trigger,
+    status
+  )
 
   const openMenu = () => {
     /*
-     * 先关闭页面中其他已经打开的状态菜单。
+     * 关闭其他行已经打开的菜单。
      */
     closeActiveStatusMenu?.()
 
@@ -293,21 +378,8 @@ const createStatusPicker = ({
     const menu =
       document.createElement('div')
 
-    menu.className = 'comic-status-menu'
-
-    const search =
-      document.createElement('input')
-
-    search.type = 'text'
-    search.className =
-      'comic-status-search'
-
-    search.placeholder = '搜索选项'
-
-    search.setAttribute(
-      'aria-label',
-      '搜索阅读状态'
-    )
+    menu.className =
+      'comic-status-menu'
 
     const optionsContainer =
       document.createElement('div')
@@ -315,12 +387,33 @@ const createStatusPicker = ({
     optionsContainer.className =
       'comic-status-options'
 
+    const handleOutsideClick =
+      event => {
+        if (
+          menu.contains(event.target) ||
+          trigger.contains(event.target)
+        ) {
+          return
+        }
+
+        closeMenu()
+      }
+
+    const handleKeyDown =
+      event => {
+        if (event.key === 'Escape') {
+          closeMenu()
+          trigger.focus()
+        }
+      }
+
     const closeMenu = () => {
       if (!menuOpen) {
         return
       }
 
       menuOpen = false
+
       menu.remove()
 
       document.removeEventListener(
@@ -346,27 +439,10 @@ const createStatusPicker = ({
       )
 
       if (
-        closeActiveStatusMenu === closeMenu
+        closeActiveStatusMenu ===
+        closeMenu
       ) {
         closeActiveStatusMenu = null
-      }
-    }
-
-    const handleOutsideClick = event => {
-      if (
-        menu.contains(event.target) ||
-        trigger.contains(event.target)
-      ) {
-        return
-      }
-
-      closeMenu()
-    }
-
-    const handleKeyDown = event => {
-      if (event.key === 'Escape') {
-        closeMenu()
-        trigger.focus()
       }
     }
 
@@ -374,7 +450,7 @@ const createStatusPicker = ({
       const rect =
         trigger.getBoundingClientRect()
 
-      const menuWidth = 220
+      const menuWidth = 136
       const pagePadding = 12
 
       let left = rect.left
@@ -382,7 +458,8 @@ const createStatusPicker = ({
 
       if (
         left + menuWidth >
-        window.innerWidth - pagePadding
+        window.innerWidth -
+          pagePadding
       ) {
         left =
           window.innerWidth -
@@ -396,14 +473,16 @@ const createStatusPicker = ({
           left
         )}px`
 
-      menu.style.top = `${top}px`
+      menu.style.top =
+        `${top}px`
 
       const menuRect =
         menu.getBoundingClientRect()
 
       if (
         menuRect.bottom >
-        window.innerHeight - pagePadding
+        window.innerHeight -
+          pagePadding
       ) {
         top =
           rect.top -
@@ -418,186 +497,149 @@ const createStatusPicker = ({
       }
     }
 
-    const applyStatus = async nextStatus => {
-      const previousStatus = status
+    const applyStatus =
+      async nextStatus => {
+        const previousStatus = status
 
-      status = nextStatus
+        /*
+         * 先立即更新界面，
+         * 让点击反馈更加自然。
+         */
+        status = nextStatus
 
-      renderStatusTrigger(
-        trigger,
-        status
-      )
+        renderStatusTrigger(
+          trigger,
+          status
+        )
 
-      closeMenu()
+        closeMenu()
 
-      trigger.disabled = true
+        trigger.disabled = true
 
-      try {
-        const succeeded =
-          await onChange(nextStatus)
+        try {
+          const succeeded =
+            await onChange(nextStatus)
 
-        if (succeeded === false) {
+          /*
+           * 保存失败时恢复原状态。
+           */
+          if (succeeded === false) {
+            status = previousStatus
+
+            renderStatusTrigger(
+              trigger,
+              status
+            )
+          }
+        } catch (error) {
+          console.error(
+            '[ComicReadTableEnhancer] ' +
+              '状态修改失败',
+            error
+          )
+
           status = previousStatus
 
           renderStatusTrigger(
             trigger,
             status
           )
+        } finally {
+          trigger.disabled = false
         }
-      } catch (error) {
-        console.error(
-          '[ComicReadTableEnhancer] 状态修改失败',
-          error
-        )
-
-        status = previousStatus
-
-        renderStatusTrigger(
-          trigger,
-          status
-        )
-      } finally {
-        trigger.disabled = false
       }
+
+    /*
+     * 创建三个状态选项。
+     */
+    for (
+      const statusValue
+      of STATUS_ORDER
+    ) {
+      const meta =
+        STATUS_META[statusValue]
+
+      const option =
+        document.createElement('button')
+
+      option.type = 'button'
+
+      option.className =
+        [
+          'comic-status-option',
+          status === statusValue
+            ? 'is-current'
+            : ''
+        ]
+          .filter(Boolean)
+          .join(' ')
+
+      const pill =
+        document.createElement('span')
+
+      pill.className =
+        `comic-status-pill is-${statusValue}`
+
+      const dot =
+        document.createElement('span')
+
+      dot.className =
+        'comic-status-dot'
+
+      const label =
+        document.createElement('span')
+
+      label.textContent = meta.label
+
+      pill.appendChild(dot)
+      pill.appendChild(label)
+
+      option.appendChild(pill)
+
+      option.addEventListener(
+        'click',
+        event => {
+          event.preventDefault()
+          event.stopPropagation()
+
+          applyStatus(statusValue)
+        }
+      )
+
+      optionsContainer.appendChild(
+        option
+      )
     }
 
-    const renderOptions = (
-      keyword = ''
-    ) => {
-      optionsContainer.replaceChildren()
+    /*
+     * 当前已经有状态时，
+     * 菜单底部显示“清除”。
+     */
+    if (status) {
+      const clearButton =
+        document.createElement('button')
 
-      const normalizedKeyword =
-        keyword.trim().toLowerCase()
+      clearButton.type = 'button'
 
-      for (
-        const statusValue
-        of STATUS_ORDER
-      ) {
-        const meta =
-          STATUS_META[statusValue]
+      clearButton.className =
+        'comic-status-clear'
 
-        if (
-          normalizedKeyword &&
-          !meta.label
-            .toLowerCase()
-            .includes(normalizedKeyword)
-        ) {
-          continue
+      clearButton.textContent = '清除'
+
+      clearButton.addEventListener(
+        'click',
+        event => {
+          event.preventDefault()
+          event.stopPropagation()
+
+          applyStatus('')
         }
+      )
 
-        const group =
-          document.createElement('div')
-
-        group.className =
-          'comic-status-group'
-
-        const groupTitle =
-          document.createElement('div')
-
-        groupTitle.className =
-          'comic-status-group-title'
-
-        groupTitle.textContent =
-          meta.group
-
-        const option =
-          document.createElement('button')
-
-        option.type = 'button'
-
-        option.className =
-          [
-            'comic-status-option',
-            status === statusValue
-              ? 'is-current'
-              : ''
-          ]
-            .filter(Boolean)
-            .join(' ')
-
-        const pill =
-          document.createElement('span')
-
-        pill.className =
-          `comic-status-pill is-${statusValue}`
-
-        const dot =
-          document.createElement('span')
-
-        dot.className =
-          'comic-status-dot'
-
-        const label =
-          document.createElement('span')
-
-        label.textContent = meta.label
-
-        pill.appendChild(dot)
-        pill.appendChild(label)
-
-        option.appendChild(pill)
-
-        option.addEventListener(
-          'click',
-          event => {
-            event.preventDefault()
-            event.stopPropagation()
-
-            applyStatus(statusValue)
-          }
-        )
-
-        group.appendChild(groupTitle)
-        group.appendChild(option)
-
-        optionsContainer.appendChild(
-          group
-        )
-      }
-
-      /*
-       * 已经选中状态时，
-       * 在菜单底部提供清除功能。
-       */
-      if (
-        status &&
-        !normalizedKeyword
-      ) {
-        const clearButton =
-          document.createElement('button')
-
-        clearButton.type = 'button'
-
-        clearButton.className =
-          'comic-status-clear'
-
-        clearButton.textContent =
-          '清除状态'
-
-        clearButton.addEventListener(
-          'click',
-          event => {
-            event.preventDefault()
-            event.stopPropagation()
-
-            applyStatus('')
-          }
-        )
-
-        optionsContainer.appendChild(
-          clearButton
-        )
-      }
+      optionsContainer.appendChild(
+        clearButton
+      )
     }
-
-    search.addEventListener(
-      'input',
-      event => {
-        renderOptions(
-          event.currentTarget.value
-        )
-      }
-    )
 
     menu.addEventListener(
       'click',
@@ -606,12 +648,12 @@ const createStatusPicker = ({
       }
     )
 
-    menu.appendChild(search)
-    menu.appendChild(optionsContainer)
+    menu.appendChild(
+      optionsContainer
+    )
 
     document.body.appendChild(menu)
 
-    renderOptions()
     positionMenu()
 
     document.addEventListener(
@@ -636,11 +678,8 @@ const createStatusPicker = ({
       true
     )
 
-    closeActiveStatusMenu = closeMenu
-
-    window.requestAnimationFrame(() => {
-      search.focus()
-    })
+    closeActiveStatusMenu =
+      closeMenu
   }
 
   trigger.addEventListener(
@@ -658,23 +697,20 @@ const createStatusPicker = ({
     }
   )
 
-  trigger.dataset.comicId = comicId
-
   return trigger
 }
 
 /**
- * 给页面中的第一个 Notion Table 增加状态列。
+ * 给页面中的第一个 Notion Table
+ * 添加“状态”列。
  */
 const enhanceTable = root => {
   const table =
-    root.querySelector('.notion-table')
-
-  if (!table) {
-    console.log(
-      '[ComicReadTableEnhancer] 没找到 .notion-table'
+    root.querySelector(
+      '.notion-table'
     )
 
+  if (!table) {
     return false
   }
 
@@ -685,7 +721,8 @@ const enhanceTable = root => {
 
   const dataRows = Array.from(
     table.querySelectorAll(
-      '.notion-table-body > .notion-table-row'
+      '.notion-table-body > ' +
+        '.notion-table-row'
     )
   )
 
@@ -693,21 +730,14 @@ const enhanceTable = root => {
     !headerInner ||
     dataRows.length === 0
   ) {
-    console.log(
-      '[ComicReadTableEnhancer] 表格结构不完整',
-      {
-        hasHeader: Boolean(headerInner),
-        rowCount: dataRows.length
-      }
-    )
-
     return false
   }
 
-  const savedState = getSavedState()
+  const savedState =
+    getSavedState()
 
   /*
-   * 增加状态表头。
+   * 添加真正的表头单元格。
    */
   if (
     !headerInner.querySelector(
@@ -718,10 +748,11 @@ const enhanceTable = root => {
       document.createElement('div')
 
     headerWrapper.className =
-      'notion-table-th comic-read-table-th'
+      'notion-table-th ' +
+      'comic-read-table-th'
 
-    headerWrapper.dataset.comicReadHeader =
-      'true'
+    headerWrapper.dataset
+      .comicReadHeader = 'true'
 
     const headerCell =
       document.createElement('div')
@@ -738,62 +769,76 @@ const enhanceTable = root => {
     headerCellInner.className =
       'notion-table-view-header-cell-inner'
 
-    headerCellInner.textContent = '状态'
+    headerCellInner.textContent =
+      '状态'
 
     headerCell.appendChild(
       headerCellInner
     )
 
-    headerWrapper.appendChild(headerCell)
-    headerInner.prepend(headerWrapper)
+    headerWrapper.appendChild(
+      headerCell
+    )
+
+    headerInner.prepend(
+      headerWrapper
+    )
   }
 
   /*
-   * 给每一条漫画增加状态单元格。
+   * 为每条漫画增加状态单元格。
    */
-  dataRows.forEach((row, index) => {
-    if (
-      row.querySelector(
-        '[data-comic-read-cell]'
+  dataRows.forEach(
+    (row, index) => {
+      if (
+        row.querySelector(
+          '[data-comic-read-cell]'
+        )
+      ) {
+        return
+      }
+
+      const comicId =
+        getComicIdFromRow(
+          row,
+          index
+        )
+
+      const cell =
+        document.createElement('div')
+
+      cell.className =
+        'notion-table-cell ' +
+        'comic-read-table-cell'
+
+      cell.dataset.comicReadCell =
+        'true'
+
+      cell.dataset.comicId =
+        comicId
+
+      const statusPicker =
+        createStatusPicker({
+          comicId,
+
+          currentStatus:
+            savedState[comicId] || '',
+
+          onChange:
+            async nextStatus => {
+              return saveState(
+                comicId,
+                nextStatus
+              )
+            }
+        })
+
+      cell.appendChild(
+        statusPicker
       )
-    ) {
-      return
+
+      row.prepend(cell)
     }
-
-    const comicId =
-      getComicIdFromRow(row, index)
-
-    const cell =
-      document.createElement('div')
-
-    cell.className =
-      'notion-table-cell comic-read-table-cell'
-
-    cell.dataset.comicReadCell = 'true'
-    cell.dataset.comicId = comicId
-
-    const statusPicker =
-      createStatusPicker({
-        comicId,
-
-        currentStatus:
-          savedState[comicId] || '',
-
-        onChange: async nextStatus => {
-          return saveState(
-            comicId,
-            nextStatus
-          )
-        }
-      })
-
-    cell.appendChild(statusPicker)
-    row.prepend(cell)
-  })
-
-  console.log(
-    '[ComicReadTableEnhancer] 已处理漫画行：',
-    dataRows.length
   )
 
   return true
@@ -814,44 +859,41 @@ const ComicReadTableEnhancer = ({
 
     if (!root) {
       console.log(
-        '[ComicReadTableEnhancer] 没找到 #notion-article'
+        '[ComicReadTableEnhancer] ' +
+          '没找到 #notion-article'
       )
 
       return
     }
 
-    let timer = null
-
-    const run = () => {
-      window.clearTimeout(timer)
-
-      timer = window.setTimeout(() => {
-        enhanceTable(root)
-      }, 100)
-    }
-
     /*
-     * 等待 NotionRenderer 首次完成渲染。
+     * 不再使用 MutationObserver。
+     *
+     * 只在页面初次加载期间检查四次，
+     * 避免手机端持续扫描整篇文章，
+     * 导致卡顿和发热。
+     *
+     * 最后一次安排在 5 秒，
+     * 兼容移动网络下数据库加载较慢。
      */
-    timer = window.setTimeout(() => {
-      enhanceTable(root)
-    }, 800)
+    const delays = [
+      400,
+      1200,
+      2500,
+      5000
+    ]
 
-    /*
-     * 数据库后续异步渲染或重新加载时，
-     * 自动为新增的行补上状态控件。
-     */
-    const observer =
-      new MutationObserver(run)
-
-    observer.observe(root, {
-      childList: true,
-      subtree: true
-    })
+    const timers =
+      delays.map(delay =>
+        window.setTimeout(() => {
+          enhanceTable(root)
+        }, delay)
+      )
 
     return () => {
-      window.clearTimeout(timer)
-      observer.disconnect()
+      timers.forEach(timer => {
+        window.clearTimeout(timer)
+      })
 
       removeEnhancement(root)
     }
@@ -865,7 +907,7 @@ const ComicReadTableEnhancer = ({
     <style jsx global>{`
       /*
        * ==========================================
-       * 状态列宽度
+       * 状态列
        * ==========================================
        */
 
@@ -899,7 +941,7 @@ const ComicReadTableEnhancer = ({
 
       /*
        * ==========================================
-       * 表格里的状态按钮
+       * 表格中的状态按钮
        * ==========================================
        */
 
@@ -921,11 +963,15 @@ const ComicReadTableEnhancer = ({
 
         cursor: pointer;
         outline: none;
+
+        touch-action: manipulation;
+
+        -webkit-tap-highlight-color:
+          transparent;
       }
 
       /*
-       * 未设置状态时，
-       * 单元格中不显示任何文字。
+       * 未设置状态时保持空白。
        */
       .comic-status-trigger.is-empty {
         color: transparent;
@@ -960,11 +1006,11 @@ const ComicReadTableEnhancer = ({
 
         min-height: 23px;
 
-        padding: 1px 8px;
+        padding: 1px 7px;
 
         border-radius: 999px;
 
-        font-size: 14px;
+        font-size: 13px;
         line-height: 21px;
 
         white-space: nowrap;
@@ -1022,7 +1068,7 @@ const ComicReadTableEnhancer = ({
 
       /*
        * ==========================================
-       * 弹出的状态菜单
+       * 弹出状态菜单
        * ==========================================
        */
 
@@ -1030,12 +1076,9 @@ const ComicReadTableEnhancer = ({
         position: fixed;
         z-index: 99999;
 
-        width: 220px;
-        max-height: min(420px, 80vh);
+        width: 136px;
 
         padding: 6px;
-
-        overflow-y: auto;
 
         color: #37352f;
         background: #ffffff;
@@ -1054,54 +1097,10 @@ const ComicReadTableEnhancer = ({
             rgba(15, 15, 15, 0.1);
       }
 
-      .comic-status-search {
-        width: 100%;
-        height: 32px;
-
-        padding: 0 9px;
-        margin-bottom: 5px;
-
-        color: #37352f;
-        background: #ffffff;
-
-        border: 1px solid
-          rgba(15, 15, 15, 0.12);
-
-        border-radius: 4px;
-
-        box-sizing: border-box;
-
-        font-size: 14px;
-
-        outline: none;
-      }
-
-      .comic-status-search::placeholder {
-        color:
-          rgba(55, 53, 47, 0.42);
-      }
-
-      .comic-status-search:focus {
-        border-color:
-          rgba(55, 53, 47, 0.35);
-
-        box-shadow:
-          0 0 0 1px
-          rgba(55, 53, 47, 0.08);
-      }
-
-      .comic-status-group {
-        padding: 3px 0;
-      }
-
-      .comic-status-group-title {
-        padding: 5px 8px 3px;
-
-        color:
-          rgba(55, 53, 47, 0.58);
-
-        font-size: 12px;
-        line-height: 18px;
+      .comic-status-options {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
       }
 
       .comic-status-option,
@@ -1112,7 +1111,7 @@ const ComicReadTableEnhancer = ({
         width: 100%;
         min-height: 32px;
 
-        padding: 4px 8px;
+        padding: 4px 7px;
 
         color: #37352f;
         background: transparent;
@@ -1123,9 +1122,15 @@ const ComicReadTableEnhancer = ({
         box-sizing: border-box;
 
         font: inherit;
+        font-size: 13px;
         text-align: left;
 
         cursor: pointer;
+
+        touch-action: manipulation;
+
+        -webkit-tap-highlight-color:
+          transparent;
       }
 
       .comic-status-option:hover,
@@ -1136,10 +1141,14 @@ const ComicReadTableEnhancer = ({
       }
 
       .comic-status-clear {
-        margin-top: 5px;
+        justify-content: center;
+
+        min-height: 29px;
+        margin-top: 4px;
+        padding-top: 5px;
 
         color:
-          rgba(55, 53, 47, 0.68);
+          rgba(55, 53, 47, 0.64);
 
         border-top: 1px solid
           rgba(55, 53, 47, 0.09);
@@ -1148,8 +1157,11 @@ const ComicReadTableEnhancer = ({
       }
 
       /*
-       * 暗色模式下让菜单保持可读。
+       * ==========================================
+       * 暗色模式
+       * ==========================================
        */
+
       .dark .comic-status-menu {
         color: #e8e8e8;
         background: #252525;
@@ -1158,20 +1170,17 @@ const ComicReadTableEnhancer = ({
           rgba(255, 255, 255, 0.1);
       }
 
-      .dark .comic-status-search {
-        color: #eeeeee;
-        background: #303030;
-
-        border-color:
-          rgba(255, 255, 255, 0.14);
+      .dark .comic-status-option,
+      .dark .comic-status-clear {
+        color: #e8e8e8;
       }
 
-      .dark
-        .comic-status-group-title,
-      .dark
-        .comic-status-clear {
+      .dark .comic-status-clear {
         color:
           rgba(235, 235, 235, 0.66);
+
+        border-top-color:
+          rgba(255, 255, 255, 0.1);
       }
 
       .dark
