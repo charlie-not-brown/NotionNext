@@ -1,10 +1,6 @@
 import { siteConfig } from '@/lib/config'
 import { getBlockCollectionId } from 'notion-utils'
 
-/**
- * 统一 Notion ID 格式：
- * 删除横杠并转成小写。
- */
 const normalizeNotionId = id => {
   return String(id || '')
     .replace(/-/g, '')
@@ -31,10 +27,6 @@ const SmartCollection = ({
       []
     )
 
-  /*
-   * 防止配置因为环境变量等原因
-   * 不是数组。
-   */
   const targetDatabaseIds =
     Array.isArray(configuredDatabaseIds)
       ? configuredDatabaseIds.map(
@@ -42,10 +34,9 @@ const SmartCollection = ({
         )
       : []
 
-  /*
-   * 从当前数据库块中读取
-   * 它实际连接的数据库 ID。
-   */
+  const currentPageId =
+    normalizeNotionId(pageId)
+
   const currentDatabaseId =
     normalizeNotionId(
       getBlockCollectionId(
@@ -55,40 +46,29 @@ const SmartCollection = ({
     )
 
   const isTargetPage =
-    normalizeNotionId(pageId) ===
-    targetPageId
+    currentPageId === targetPageId
 
   const isTargetDatabase =
     targetDatabaseIds.includes(
       currentDatabaseId
     )
 
-  const isComicCollection =
-    isTargetPage &&
-    isTargetDatabase
-
-  if (
-    typeof window !== 'undefined' &&
-    isComicCollection
-  ) {
-    console.log(
-      '[SmartCollection] 已识别漫画数据库',
+  console.log(
+    '[SmartCollection] 数据库检查',
     {
-        pageId:
-          normalizeNotionId(pageId),
-        databaseId:
-          currentDatabaseId
+      currentPageId,
+      targetPageId,
+      currentDatabaseId,
+      targetDatabaseIds,
+      isTargetPage,
+      isTargetDatabase,
+      blockId: block?.id,
+      blockType: block?.type,
+      hasRecordMap:
+        Boolean(ctx?.recordMap)
     }
   )
-}
 
-  /*
-   * 当前阶段只完成识别，
-   * 仍然使用原版数据库渲染。
-   *
-   * 下一阶段才会把目标数据库
-   * 换成自定义 React 表格。
-   */
   return (
     <OriginalCollection
       block={block}
