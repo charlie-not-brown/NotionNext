@@ -100,4 +100,6 @@ const BLOG = {
           '2ccff97e540781f89acbd2f0c5896c80'
         ],
 
+}
+
 module.exports = BLOG
