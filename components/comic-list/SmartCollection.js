@@ -53,21 +53,16 @@ const SmartCollection = ({
       currentDatabaseId
     )
 
-  console.log(
-    '[SmartCollection] 数据库检查',
-    {
-      currentPageId,
-      targetPageId,
-      currentDatabaseId,
-      targetDatabaseIds,
-      isTargetPage,
-      isTargetDatabase,
-      blockId: block?.id,
-      blockType: block?.type,
-      hasRecordMap:
-        Boolean(ctx?.recordMap)
-    }
-  )
+  if (
+    typeof window !== 'undefined' &&
+    isTargetPage &&
+    isTargetDatabase
+  ) {
+    console.log(
+      '[SmartCollection] 已识别漫画数据库',
+      currentDatabaseId
+    )
+  }
 
   return (
     <OriginalCollection
