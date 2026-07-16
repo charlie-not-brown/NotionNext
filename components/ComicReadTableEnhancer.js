@@ -127,42 +127,80 @@ const enhanceTable = root => {
    * 不再依赖 .notion-table-body，
    * 直接查找整个 Table 内的所有 row。
    */
-  const allRows = Array.from(
-    table.querySelectorAll('.notion-table-row')
+  /*
+ * react-notion-x 的表头和数据行是两套独立结构：
+ *
+ * 表头：
+ * .notion-table-header-inner
+ *
+ * 数据行：
+ * .notion-table-body > .notion-table-row
+ */
+const headerInner = table.querySelector(
+  '.notion-table-header-inner'
+)
+
+const dataRows = Array.from(
+  table.querySelectorAll(
+    '.notion-table-body > .notion-table-row'
+  )
+)
+
+if (!headerInner || dataRows.length === 0) {
+  console.log(
+    '[ComicReadTableEnhancer] 表格结构不完整',
+    {
+      hasHeader: Boolean(headerInner),
+      rowCount: dataRows.length
+    }
   )
 
-  if (allRows.length === 0) {
-    console.log(
-      '[ComicReadTableEnhancer] 找到表格，但没找到行'
-    )
+  return false
+}
 
-    return false
-  }
+const savedState = getSavedState()
 
-  const savedState = getSavedState()
+/*
+ * 给真正的表头增加“已读”列。
+ *
+ * 必须使用与 react-notion-x 原表头相同的三层结构，
+ * 才能与下面的数据单元格对齐。
+ */
+if (
+  !headerInner.querySelector(
+    '[data-comic-read-header]'
+  )
+) {
+  const headerWrapper =
+    document.createElement('div')
 
-  /*
-   * 通常第一个 notion-table-row 是表头。
-   * 其余才是漫画数据行。
-   */
-  const [headerRow, ...dataRows] = allRows
+  headerWrapper.className =
+    'notion-table-th comic-read-table-th'
 
-  if (
-    headerRow &&
-    !headerRow.querySelector(
-      '[data-comic-read-header]'
-    )
-  ) {
-    const headerCell = document.createElement('div')
+  headerWrapper.dataset.comicReadHeader = 'true'
 
-    headerCell.className =
-      'notion-table-cell comic-read-table-cell'
+  const headerCell =
+    document.createElement('div')
 
-    headerCell.dataset.comicReadHeader = 'true'
-    headerCell.textContent = '已读'
+  headerCell.className =
+    [
+      'notion-table-view-header-cell',
+      'comic-read-table-header-cell'
+    ].join(' ')
 
-    headerRow.prepend(headerCell)
-  }
+  const headerCellInner =
+    document.createElement('div')
+
+  headerCellInner.className =
+    'notion-table-view-header-cell-inner'
+
+  headerCellInner.textContent = '已读'
+
+  headerCell.appendChild(headerCellInner)
+  headerWrapper.appendChild(headerCell)
+
+  headerInner.prepend(headerWrapper)
+}
 
   dataRows.forEach((row, index) => {
     if (
@@ -298,6 +336,11 @@ const ComicReadTableEnhancer = ({
         height: 16px;
 
         margin: 0;
+
+        /*
+         * 控制原生复选框勾选后的颜色。
+         */
+        accent-color: #333333;
 
         cursor: pointer;
       }
