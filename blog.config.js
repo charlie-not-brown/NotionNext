@@ -83,18 +83,21 @@ const BLOG = {
   // uuid重定向至 slug
   UUID_REDIRECT: process.env.UUID_REDIRECT || false,
 
-  //漫画数据库
+  // 漫画数据库
   COMIC_READING_PAGE_ID:
-    process.env
-      .NEXT_PUBLIC_COMIC_READING_PAGE_ID ||
+    process.env.NEXT_PUBLIC_COMIC_READING_PAGE_ID ||
     '35eff97e54078096a2aad5d8128443e4',
 
-  COMIC_DATABASE_ID:
-    process.env
-      .NEXT_PUBLIC_COMIC_DATABASE_ID ||
-    '2ccff97e540781698719eaa396bf8860',
-    '35eff97e540780159466eda50e628173',
-    '2ccff97e540781f89acbd2f0c5896c80',
-}
+  COMIC_DATABASE_IDS:
+    process.env.NEXT_PUBLIC_COMIC_DATABASE_IDS
+      ? process.env.NEXT_PUBLIC_COMIC_DATABASE_IDS
+          .split(',')
+          .map(id => id.trim())
+          .filter(Boolean)
+      : [
+          '2ccff97e540781698719eaa396bf8860',
+          '35eff97e540780159466eda50e628173',
+          '2ccff97e540781f89acbd2f0c5896c80'
+        ],
 
 module.exports = BLOG
