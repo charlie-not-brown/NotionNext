@@ -7,6 +7,7 @@ import 'katex/dist/katex.min.css'
 import dynamic from 'next/dynamic'
 import { useEffect, useRef } from 'react'
 import { NotionRenderer, useNotionContext } from 'react-notion-x'
+import ComicReadTableEnhancer from '@/components/ComicReadTableEnhancer'
 
 /**
  * Notion 自定义 Emoji 映射表
@@ -253,6 +254,12 @@ const NotionPage = ({ post, className }) => {
           Quote: NotionQuote,
           Tweet
         }}
+      />
+
+      <ComicReadTableEnhancer
+        post={post}
+        enabled={true}
+        targetSlug='reading-list'
       />
 
       <AdEmbed />
