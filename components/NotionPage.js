@@ -256,11 +256,7 @@ const NotionPage = ({ post, className }) => {
         }}
       />
 
-      <ComicReadTableEnhancer
-        post={post}
-        enabled={true}
-        targetSlug='reading-list'
-      />
+      <ComicReadTableEnhancer enabled={true} />
 
       <AdEmbed />
       {hasCodeBlock(post?.blockMap) && <PrismMac />}

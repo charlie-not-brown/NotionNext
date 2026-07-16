@@ -1,42 +1,19 @@
 import { useEffect } from 'react'
 
-/**
- * 漫画阅读状态的本地存储 key。
- *
- * 目前只是测试版：
- * - 勾选状态保存在当前浏览器 localStorage
- * - 后续接入 Supabase 后，只需要替换读写数据的部分
- */
 const STORAGE_KEY = 'notionnext-comic-read-status-v1'
 
-/**
- * 读取当前浏览器已经保存的阅读状态。
- *
- * 最终格式类似：
- *
- * {
- *   "comic-page-id-1": true,
- *   "comic-page-id-2": true
- * }
- */
-const getSavedReadState = () => {
+const getSavedState = () => {
   if (typeof window === 'undefined') {
     return {}
   }
 
   try {
-    const saved = window.localStorage.getItem(STORAGE_KEY)
-
-    if (!saved) {
-      return {}
-    }
-
-    const parsed = JSON.parse(saved)
-
-    return parsed && typeof parsed === 'object' ? parsed : {}
+    return JSON.parse(
+      window.localStorage.getItem(STORAGE_KEY) || '{}'
+    )
   } catch (error) {
     console.warn(
-      '[ComicReadTableEnhancer] 读取阅读状态失败：',
+      '[ComicReadTableEnhancer] 读取本地状态失败',
       error
     )
 
@@ -44,250 +21,162 @@ const getSavedReadState = () => {
   }
 }
 
-/**
- * 保存某一本漫画的阅读状态。
- */
-const saveReadState = (comicId, checked) => {
-  if (typeof window === 'undefined' || !comicId) {
-    return
-  }
-
+const saveState = (comicId, checked) => {
   try {
-    const savedState = getSavedReadState()
+    const state = getSavedState()
 
     if (checked) {
-      savedState[comicId] = true
+      state[comicId] = true
     } else {
-      /*
-       * 未读状态不用专门保存 false，
-       * 直接删除即可，减少 localStorage 数据量。
-       */
-      delete savedState[comicId]
+      delete state[comicId]
     }
 
     window.localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify(savedState)
+      JSON.stringify(state)
     )
   } catch (error) {
     console.warn(
-      '[ComicReadTableEnhancer] 保存阅读状态失败：',
+      '[ComicReadTableEnhancer] 保存本地状态失败',
       error
     )
   }
 }
 
 /**
- * 从 react-notion-x 的 recordMap 中，
- * 自动读取当前嵌入数据库中的漫画 pageId。
+ * 从行内链接自动提取漫画条目的 Notion pageId。
  *
- * 不需要手动填写任何一条漫画的 ID。
+ * 例如：
+ * /2c9ff97e540780f8b7b0007a6f023039
+ *
+ * 会得到：
+ * 2c9ff97e540780f8b7b0007a6f023039
  */
-const getCollectionBlockIds = recordMap => {
-  const collectionQueries = recordMap?.collection_query
+const getComicIdFromRow = (row, index) => {
+  const link = row.querySelector('a[href]')
 
-  if (
-    !collectionQueries ||
-    typeof collectionQueries !== 'object'
-  ) {
-    return []
+  if (link) {
+    const href = link.getAttribute('href') || ''
+
+    const path = href
+      .split('?')[0]
+      .split('#')[0]
+      .replace(/^\/+/, '')
+
+    const possibleId = path.split('/').pop()
+
+    if (
+      possibleId &&
+      /^[a-f0-9]{32}$/i.test(possibleId)
+    ) {
+      return possibleId.toLowerCase()
+    }
   }
 
   /*
-   * collection_query 的结构大致是：
+   * 兼容链接已被 POST_DISABLE_DATABASE_CLICK 删除 href
+   * 或暂时无法读取条目 ID 的情况。
    *
-   * collectionId
-   *   └── viewId
-   *         └── blockIds
-   *
-   * 我们自动找到页面里的数据库查询结果。
+   * 先根据标题生成稳定标识。
    */
-  for (const viewMap of Object.values(collectionQueries)) {
-    if (!viewMap || typeof viewMap !== 'object') {
-      continue
-    }
+  const title =
+    row
+      .querySelector(
+        [
+          '.notion-table-cell-title',
+          '.notion-property-title',
+          '.notion-page-title-text',
+          '.notion-page-title'
+        ].join(',')
+      )
+      ?.textContent?.trim() ||
+    row.textContent?.trim() ||
+    `row-${index}`
 
-    for (const rawCollectionData of Object.values(viewMap)) {
-      /*
-       * 兼容可能存在的 value 包装。
-       */
-      const collectionData =
-        rawCollectionData?.value ?? rawCollectionData
-
-      const blockIds =
-        collectionData?.collection_group_results?.blockIds ??
-        collectionData?.blockIds
-
-      if (Array.isArray(blockIds) && blockIds.length > 0) {
-        return blockIds
-      }
-    }
-  }
-
-  return []
+  return `title-${title}`
 }
 
-/**
- * 删除我们自己插入的阅读状态列。
- *
- * 用于：
- * - 页面切换
- * - 组件卸载
- * - 防止重复插入
- */
-const removeExistingEnhancement = articleRoot => {
-  if (!articleRoot) {
-    return
-  }
-
-  articleRoot
-    .querySelectorAll(
+const removeEnhancement = root => {
+  root
+    ?.querySelectorAll(
       [
-        '[data-comic-read-header="true"]',
-        '[data-comic-read-cell="true"]'
+        '[data-comic-read-header]',
+        '[data-comic-read-cell]'
       ].join(',')
     )
-    .forEach(element => {
-      element.remove()
-    })
+    .forEach(element => element.remove())
 }
 
-/**
- * 为指定 Table 插入：
- *
- * 已读
- * ☐
- * ☑
- * ☐
- */
-const enhanceComicTable = ({
-  articleRoot,
-  recordMap
-}) => {
-  if (!articleRoot) {
-    return
-  }
-
+const enhanceTable = root => {
   /*
-   * 获取漫画 pageId。
-   *
-   * 例如：
-   *
-   * [
-   *   "abc123...",
-   *   "def456...",
-   *   "ghi789..."
-   * ]
+   * 找到文章里第一个 Table 数据库。
    */
-  const blockIds = getCollectionBlockIds(recordMap)
-
-  if (blockIds.length === 0) {
-    return
-  }
-
-  /*
-   * 你的目标页面目前是嵌入的数据库 Table。
-   *
-   * 第一版先选择这个页面中的第一个数据库 Table。
-   * 以后页面里如果出现多个数据库，
-   * 再改成按照 databaseId 精确指定即可。
-   */
-  const table = articleRoot.querySelector('.notion-table')
+  const table = root.querySelector('.notion-table')
 
   if (!table) {
-    return
+    console.log(
+      '[ComicReadTableEnhancer] 没找到 .notion-table'
+    )
+
+    return false
   }
 
-  const savedState = getSavedReadState()
-
   /*
-   * ==========================================
-   * 1. 增加表头：已读
-   * ==========================================
+   * react-notion-x 当前表格行。
+   *
+   * 不再依赖 .notion-table-body，
+   * 直接查找整个 Table 内的所有 row。
    */
-  const headerInner = table.querySelector(
-    '.notion-table-header-inner'
+  const allRows = Array.from(
+    table.querySelectorAll('.notion-table-row')
   )
 
+  if (allRows.length === 0) {
+    console.log(
+      '[ComicReadTableEnhancer] 找到表格，但没找到行'
+    )
+
+    return false
+  }
+
+  const savedState = getSavedState()
+
+  /*
+   * 通常第一个 notion-table-row 是表头。
+   * 其余才是漫画数据行。
+   */
+  const [headerRow, ...dataRows] = allRows
+
   if (
-    headerInner &&
-    !headerInner.querySelector(
-      '[data-comic-read-header="true"]'
+    headerRow &&
+    !headerRow.querySelector(
+      '[data-comic-read-header]'
     )
   ) {
-    const headerWrapper = document.createElement('div')
-
-    headerWrapper.className =
-      'notion-table-th comic-read-table-th'
-
-    headerWrapper.dataset.comicReadHeader = 'true'
-
     const headerCell = document.createElement('div')
 
     headerCell.className =
-      [
-        'notion-table-view-header-cell',
-        'comic-read-table-header-cell'
-      ].join(' ')
+      'notion-table-cell comic-read-table-cell'
 
-    const headerCellInner = document.createElement('div')
+    headerCell.dataset.comicReadHeader = 'true'
+    headerCell.textContent = '已读'
 
-    headerCellInner.className =
-      'notion-table-view-header-cell-inner'
-
-    headerCellInner.textContent = '已读'
-
-    headerCell.appendChild(headerCellInner)
-    headerWrapper.appendChild(headerCell)
-
-    /*
-     * prepend：
-     * 插到漫画名称之前，
-     * 成为最左边第一列。
-     */
-    headerInner.prepend(headerWrapper)
+    headerRow.prepend(headerCell)
   }
 
-  /*
-   * ==========================================
-   * 2. 给每一行增加 checkbox
-   * ==========================================
-   */
-  const rows = table.querySelectorAll(
-    '.notion-table-body > .notion-table-row'
-  )
-
-  rows.forEach((row, index) => {
-    /*
-     * react-notion-x 本身就是按照 blockIds 的顺序
-     * 逐行渲染 Table，
-     * 所以直接按照 index 对应即可。
-     */
-    const comicId = blockIds[index]
-
-    if (!comicId) {
-      return
-    }
-
-    /*
-     * 防止 MutationObserver 或重新渲染导致重复插入。
-     */
+  dataRows.forEach((row, index) => {
     if (
-      row.querySelector(
-        '[data-comic-read-cell="true"]'
-      )
+      row.querySelector('[data-comic-read-cell]')
     ) {
       return
     }
 
+    const comicId = getComicIdFromRow(row, index)
+
     const cell = document.createElement('div')
 
     cell.className =
-      [
-        'notion-table-cell',
-        'notion-table-cell-checkbox',
-        'comic-read-table-cell'
-      ].join(' ')
+      'notion-table-cell comic-read-table-cell'
 
     cell.dataset.comicReadCell = 'true'
     cell.dataset.comicId = comicId
@@ -296,10 +185,6 @@ const enhanceComicTable = ({
 
     checkbox.type = 'checkbox'
     checkbox.className = 'comic-read-checkbox'
-
-    /*
-     * 根据 localStorage 恢复状态。
-     */
     checkbox.checked = savedState[comicId] === true
 
     checkbox.setAttribute(
@@ -307,158 +192,107 @@ const enhanceComicTable = ({
       '标记这部漫画为已读'
     )
 
+    checkbox.addEventListener('click', event => {
+      /*
+       * 防止点击 checkbox 时触发表格行跳转。
+       */
+      event.stopPropagation()
+    })
+
     checkbox.addEventListener('change', event => {
-      saveReadState(
+      saveState(
         comicId,
         event.currentTarget.checked
       )
     })
 
     cell.appendChild(checkbox)
-
-    /*
-     * 插到当前漫画行的最左边。
-     */
     row.prepend(cell)
   })
+
+  console.log(
+    '[ComicReadTableEnhancer] 已处理漫画行：',
+    dataRows.length
+  )
+
+  return true
 }
 
-/**
- * 漫画数据库阅读状态增强组件。
- *
- * props：
- *
- * post
- *   当前 NotionNext 文章数据
- *
- * enabled
- *   true  = 显示复选框
- *   false = 完全不显示
- *
- * targetSlug
- *   只允许指定文章启用
- */
 const ComicReadTableEnhancer = ({
-  post,
-  enabled = false,
-  targetSlug
+  enabled = false
 }) => {
   useEffect(() => {
-    /*
-     * 未登录 / 未启用：
-     * 完全不执行任何修改。
-     */
     if (!enabled) {
       return
     }
 
-    /*
-     * 不是目标漫画清单文章：
-     * 完全不执行任何修改。
-     */
-    if (
-      targetSlug &&
-      post?.slug !== targetSlug
-    ) {
-      return
-    }
-
-    const articleRoot = document.getElementById(
+    const root = document.getElementById(
       'notion-article'
     )
 
-    if (!articleRoot) {
+    if (!root) {
+      console.log(
+        '[ComicReadTableEnhancer] 没找到 #notion-article'
+      )
+
       return
     }
 
-    const runEnhancement = () => {
-      enhanceComicTable({
-        articleRoot,
-        recordMap: post?.blockMap
-      })
+    let timer = null
+
+    const run = () => {
+      window.clearTimeout(timer)
+
+      timer = window.setTimeout(() => {
+        enhanceTable(root)
+      }, 100)
     }
 
     /*
-     * 首次执行。
-     *
-     * requestAnimationFrame 可以确保
-     * NotionRenderer 已经完成当前这一轮 DOM 渲染。
+     * 首次给 NotionRenderer 一点渲染时间。
      */
-    const animationFrameId =
-      window.requestAnimationFrame(runEnhancement)
+    timer = window.setTimeout(() => {
+      enhanceTable(root)
+    }, 800)
 
     /*
-     * 监听数据库后续变化。
-     *
-     * 例如：
-     * - 点击 Load more
-     * - react-notion-x 重新渲染
-     *
-     * 新增的行也会自动获得 checkbox。
+     * 数据库异步加载或重新渲染后继续检查。
      */
-    const observer = new MutationObserver(() => {
-      runEnhancement()
-    })
+    const observer = new MutationObserver(run)
 
-    observer.observe(articleRoot, {
+    observer.observe(root, {
       childList: true,
       subtree: true
     })
 
     return () => {
-      window.cancelAnimationFrame(animationFrameId)
-
+      window.clearTimeout(timer)
       observer.disconnect()
-
-      removeExistingEnhancement(articleRoot)
+      removeEnhancement(root)
     }
-  }, [enabled, post, targetSlug])
+  }, [enabled])
 
-  /*
-   * 这里只输出样式。
-   * checkbox 和表格单元格本身由上面的代码动态生成。
-   */
   if (!enabled) {
     return null
   }
 
   return (
     <style jsx global>{`
-      /*
-       * ==========================================
-       * 漫画阅读状态列
-       * ==========================================
-       */
-
-      .comic-read-table-header-cell,
       .comic-read-table-cell {
-        width: 64px !important;
-        min-width: 64px !important;
-        max-width: 64px !important;
-        flex-shrink: 0;
-      }
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
 
-      .comic-read-table-header-cell {
+        width: 58px !important;
+        min-width: 58px !important;
+        max-width: 58px !important;
+
+        flex: 0 0 58px !important;
+
+        box-sizing: border-box;
         text-align: center;
       }
 
-      .comic-read-table-header-cell
-        .notion-table-view-header-cell-inner {
-        justify-content: center;
-      }
-
-      .comic-read-table-cell {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      /*
-       * 使用浏览器原生 checkbox。
-       *
-       * 第一版先保证功能，
-       * 后续可以再换成更符合 endspace 风格的样式。
-       */
       .comic-read-checkbox {
         width: 16px;
         height: 16px;
