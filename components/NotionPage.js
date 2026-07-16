@@ -253,8 +253,6 @@ const NotionPage = ({ post, className }) => {
   }
 
   return (
-
-  return (
     <div
       id='notion-article'
       className={`mx-auto overflow-hidden ${className || ''}`}>
