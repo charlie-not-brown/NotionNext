@@ -1,0 +1,230 @@
+.statusHeader,
+.statusHeaderCell,
+.statusCell {
+  box-sizing: border-box;
+
+  width: 78px !important;
+  min-width: 78px !important;
+  max-width: 78px !important;
+
+  flex: 0 0 78px !important;
+}
+
+.statusHeaderCell,
+.statusCell {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+.statusHeaderInner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  min-height: 32px;
+
+  padding: 0 3px;
+
+  color: inherit;
+  background: transparent;
+
+  border: 0;
+  border-radius: 4px;
+
+  cursor: pointer;
+  outline: none;
+
+  touch-action: manipulation;
+
+  -webkit-tap-highlight-color:
+    transparent;
+}
+
+.trigger:hover {
+  background:
+    rgba(80, 80, 80, 0.06);
+}
+
+.trigger:focus-visible {
+  box-shadow:
+    inset 0 0 0 1px
+    rgba(50, 50, 50, 0.32);
+}
+
+.empty {
+  color: transparent;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+
+  min-height: 23px;
+
+  padding: 1px 7px;
+
+  border-radius: 999px;
+
+  font-size: 13px;
+  line-height: 21px;
+
+  white-space: nowrap;
+}
+
+.dot {
+  display: block;
+
+  width: 8px;
+  height: 8px;
+
+  flex: 0 0 8px;
+
+  border-radius: 50%;
+}
+
+.label {
+  margin-left: 5px;
+}
+
+.want {
+  color: #5f5f5f;
+  background: #e8e8e7;
+}
+
+.want .dot {
+  background: #9b9b99;
+}
+
+.reading {
+  color: #1769a8;
+  background: #dceeff;
+}
+
+.reading .dot {
+  background: #2f80cf;
+}
+
+.finished {
+  color: #27714c;
+  background: #dff1e7;
+}
+
+.finished .dot {
+  background: #4ba574;
+}
+
+.menu {
+  position: fixed;
+  z-index: 99999;
+
+  width: 136px;
+
+  padding: 6px;
+
+  color: #37352f;
+  background: #ffffff;
+
+  border: 1px solid
+    rgba(15, 15, 15, 0.08);
+
+  border-radius: 7px;
+
+  box-sizing: border-box;
+
+  box-shadow:
+    0 4px 18px
+      rgba(15, 15, 15, 0.14),
+    0 1px 3px
+      rgba(15, 15, 15, 0.1);
+}
+
+.option,
+.clearButton {
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+  min-height: 32px;
+
+  padding: 4px 7px;
+
+  color: #37352f;
+  background: transparent;
+
+  border: 0;
+  border-radius: 4px;
+
+  box-sizing: border-box;
+
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+
+  cursor: pointer;
+
+  touch-action: manipulation;
+
+  -webkit-tap-highlight-color:
+    transparent;
+}
+
+.option:hover,
+.current,
+.clearButton:hover {
+  background:
+    rgba(55, 53, 47, 0.08);
+}
+
+.clearButton {
+  justify-content: center;
+
+  min-height: 29px;
+  margin-top: 4px;
+  padding-top: 5px;
+
+  color:
+    rgba(55, 53, 47, 0.64);
+
+  border-top: 1px solid
+    rgba(55, 53, 47, 0.09);
+
+  border-radius: 0 0 4px 4px;
+}
+
+:global(.dark) .menu {
+  color: #e8e8e8;
+  background: #252525;
+
+  border-color:
+    rgba(255, 255, 255, 0.1);
+}
+
+:global(.dark) .option,
+:global(.dark) .clearButton {
+  color: #e8e8e8;
+}
+
+:global(.dark) .clearButton {
+  color:
+    rgba(235, 235, 235, 0.66);
+
+  border-top-color:
+    rgba(255, 255, 255, 0.1);
+}
+
+:global(.dark) .option:hover,
+:global(.dark) .current,
+:global(.dark) .clearButton:hover {
+  background:
+    rgba(255, 255, 255, 0.08);
+}
