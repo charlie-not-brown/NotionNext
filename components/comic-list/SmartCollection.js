@@ -1,6 +1,11 @@
 import { siteConfig } from '@/lib/config'
 import { getBlockCollectionId } from 'notion-utils'
+import ComicCollectionTable from './ComicCollectionTable'
 
+/**
+ * 统一 Notion ID 格式：
+ * 删除横杠并转成小写。
+ */
 const normalizeNotionId = id => {
   return String(id || '')
     .replace(/-/g, '')
@@ -14,12 +19,13 @@ const SmartCollection = ({
   ctx,
   ...collectionProps
 }) => {
-  const targetPageId = normalizeNotionId(
-    siteConfig(
-      'COMIC_READING_PAGE_ID',
-      ''
+  const targetPageId =
+    normalizeNotionId(
+      siteConfig(
+        'COMIC_READING_PAGE_ID',
+        ''
+      )
     )
-  )
 
   const configuredDatabaseIds =
     siteConfig(
@@ -28,7 +34,9 @@ const SmartCollection = ({
     )
 
   const targetDatabaseIds =
-    Array.isArray(configuredDatabaseIds)
+    Array.isArray(
+      configuredDatabaseIds
+    )
       ? configuredDatabaseIds.map(
           normalizeNotionId
         )
@@ -53,19 +61,32 @@ const SmartCollection = ({
       currentDatabaseId
     )
 
-  if (
-    typeof window !== 'undefined' &&
+  const isComicCollection =
     isTargetPage &&
     isTargetDatabase
-  ) {
-    console.log(
-      '[SmartCollection] 已识别漫画数据库',
-      currentDatabaseId
+
+  /*
+   * 普通数据库继续使用原版组件。
+   */
+  if (!isComicCollection) {
+    return (
+      <OriginalCollection
+        block={block}
+        ctx={ctx}
+        {...collectionProps}
+      />
     )
   }
 
+  /*
+   * 三个目标漫画数据库进入
+   * ComicCollectionTable。
+   */
   return (
-    <OriginalCollection
+    <ComicCollectionTable
+      OriginalCollection={
+        OriginalCollection
+      }
       block={block}
       ctx={ctx}
       {...collectionProps}
