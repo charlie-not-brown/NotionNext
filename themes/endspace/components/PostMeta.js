@@ -1,5 +1,5 @@
 import { siteConfig } from '@/lib/config'
-import { IconClock, IconRefresh, IconFolder, IconFileText } from '@tabler/icons-react'
+import { IconClock, IconRefresh, IconFolder, IconFileText,IconUser } from '@tabler/icons-react'
 
 /**
  * PostMeta Component - Minimalist Light Industrial
