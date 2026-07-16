@@ -316,11 +316,9 @@ const ComicReadTableEnhancer = ({
 
   return (
     <style jsx global>{`
+      .comic-read-table-th,
+      .comic-read-table-header-cell,
       .comic-read-table-cell {
-        display: flex !important;
-        align-items: center;
-        justify-content: center;
-
         width: 58px !important;
         min-width: 58px !important;
         max-width: 58px !important;
@@ -328,8 +326,24 @@ const ComicReadTableEnhancer = ({
         flex: 0 0 58px !important;
 
         box-sizing: border-box;
-        text-align: center;
       }
+
+      .comic-read-table-header-cell,
+      .comic-read-table-cell {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .comic-read-table-header-cell
+        .notion-table-view-header-cell-inner {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        width: 100%;
+      }
+
 
       .comic-read-checkbox {
         width: 16px;
@@ -340,7 +354,7 @@ const ComicReadTableEnhancer = ({
         /*
          * 控制原生复选框勾选后的颜色。
          */
-        accent-color: #333333;
+        accent-color: #727272;
 
         cursor: pointer;
       }
