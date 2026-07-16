@@ -1,6 +1,16 @@
 import { useEffect } from 'react'
 
-const STORAGE_KEY = 'notionnext-comic-read-status-v1'
+const STORAGE_KEY =
+  'notionnext-comic-reading-status-v2'
+
+const OLD_STORAGE_KEY =
+  'notionnext-comic-read-status-v1'
+
+const VALID_STATUSES = [
+  'want',
+  'reading',
+  'finished'
+]
 
 const getSavedState = () => {
   if (typeof window === 'undefined') {
@@ -8,12 +18,53 @@ const getSavedState = () => {
   }
 
   try {
-    return JSON.parse(
-      window.localStorage.getItem(STORAGE_KEY) || '{}'
+    const currentData =
+      window.localStorage.getItem(STORAGE_KEY)
+
+    if (currentData) {
+      const parsed = JSON.parse(currentData)
+
+      return parsed &&
+        typeof parsed === 'object'
+        ? parsed
+        : {}
+    }
+
+    /*
+     * 自动迁移此前 checkbox 的测试数据：
+     *
+     * true → finished（读完）
+     */
+    const oldData =
+      window.localStorage.getItem(
+        OLD_STORAGE_KEY
+      )
+
+    if (!oldData) {
+      return {}
+    }
+
+    const oldState = JSON.parse(oldData)
+    const migratedState = {}
+
+    for (
+      const [comicId, checked]
+      of Object.entries(oldState)
+    ) {
+      if (checked === true) {
+        migratedState[comicId] = 'finished'
+      }
+    }
+
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(migratedState)
     )
+
+    return migratedState
   } catch (error) {
     console.warn(
-      '[ComicReadTableEnhancer] 读取本地状态失败',
+      '[ComicReadTableEnhancer] 读取状态失败',
       error
     )
 
@@ -21,13 +72,20 @@ const getSavedState = () => {
   }
 }
 
-const saveState = (comicId, checked) => {
+const saveState = (comicId, status) => {
+  if (!comicId) {
+    return
+  }
+
   try {
     const state = getSavedState()
 
-    if (checked) {
-      state[comicId] = true
+    if (VALID_STATUSES.includes(status)) {
+      state[comicId] = status
     } else {
+      /*
+       * 选择“未设置”时删除该记录。
+       */
       delete state[comicId]
     }
 
@@ -37,7 +95,7 @@ const saveState = (comicId, checked) => {
     )
   } catch (error) {
     console.warn(
-      '[ComicReadTableEnhancer] 保存本地状态失败',
+      '[ComicReadTableEnhancer] 保存状态失败',
       error
     )
   }
@@ -194,7 +252,7 @@ if (
   headerCellInner.className =
     'notion-table-view-header-cell-inner'
 
-  headerCellInner.textContent = '已读'
+  headerCellInner.textContent = '状态'
 
   headerCell.appendChild(headerCellInner)
   headerWrapper.appendChild(headerCell)
@@ -219,32 +277,65 @@ if (
     cell.dataset.comicReadCell = 'true'
     cell.dataset.comicId = comicId
 
-    const checkbox = document.createElement('input')
+    const select = document.createElement('select')
 
-    checkbox.type = 'checkbox'
-    checkbox.className = 'comic-read-checkbox'
-    checkbox.checked = savedState[comicId] === true
+    select.className = 'comic-reading-status-select'
 
-    checkbox.setAttribute(
+    select.setAttribute(
       'aria-label',
-      '标记这部漫画为已读'
+      '设置这部漫画的阅读状态'
     )
 
-    checkbox.addEventListener('click', event => {
+    const options = [
+      {
+        value: '',
+        label: '未设置'
+      },
+      {
+        value: 'want',
+        label: '想读'
+      },
+      {
+        value: 'reading',
+       label: '在读'
+      },
+      {
+        value: 'finished',
+        label: '读完'
+      }
+    ]
+
+    for (const optionData of options) {
+      const option =
+        document.createElement('option')
+
+      option.value = optionData.value
+      option.textContent = optionData.label
+
+      select.appendChild(option)
+    }
+
+    select.value = savedState[comicId] || ''
+
+    select.dataset.status = select.value
+
+    select.addEventListener('click', event => {
       /*
-       * 防止点击 checkbox 时触发表格行跳转。
+       * 防止点击下拉框时触发表格行跳转。
        */
-      event.stopPropagation()
+     event.stopPropagation()
     })
 
-    checkbox.addEventListener('change', event => {
-      saveState(
-        comicId,
-        event.currentTarget.checked
-      )
+    select.addEventListener('change', event => {
+      const status = event.currentTarget.value
+
+      event.currentTarget.dataset.status =
+        status
+
+      saveState(comicId, status)
     })
 
-    cell.appendChild(checkbox)
+    cell.appendChild(select)
     row.prepend(cell)
   })
 
@@ -345,18 +436,60 @@ const ComicReadTableEnhancer = ({
       }
 
 
-      .comic-read-checkbox {
-        width: 16px;
-        height: 16px;
+      .comic-reading-status-select {
+        width: 78px;
+        height: 28px;
 
-        margin: 0;
+        padding: 0 7px;
 
-        /*
-         * 控制原生复选框勾选后的颜色。
-         */
-        accent-color: #727272;
+        color: #333333;
+        background: #fafafa;
+
+        border: 1px solid
+          rgba(40, 40, 40, 0.3);
+        border-radius: 4px;
+
+        font-size: 13px;
+        line-height: 1;
 
         cursor: pointer;
+        outline: none;
+      }
+
+      .comic-reading-status-select:hover {
+        border-color:
+          rgba(30, 30, 30, 0.65);
+      }
+
+      .comic-reading-status-select:focus {
+        border-color: #333333;
+
+        box-shadow:
+          0 0 0 1px
+          rgba(51, 51, 51, 0.16);
+      }
+
+      .comic-reading-status-select[
+        data-status='finished'
+      ] {
+        color: #ffffff;
+        background: ;
+        border-color: #333333;
+      }
+
+      .comic-reading-status-select[
+        data-status='reading'
+      ] {
+        color: #222222;
+        background: #e5e5e5;
+        border-color: #888888;
+      }
+
+      .comic-reading-status-select[
+        data-status='want'
+      ] {
+        color: #333333;
+        background: #fafafa;
       }
     `}</style>
   )
