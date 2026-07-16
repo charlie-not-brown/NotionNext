@@ -67,6 +67,21 @@ const SmartCollection = ({
     isTargetPage &&
     isTargetDatabase
 
+  if (
+    typeof window !== 'undefined' &&
+    isComicCollection
+  ) {
+    console.log(
+      '[SmartCollection] 已识别漫画数据库',
+    {
+        pageId:
+          normalizeNotionId(pageId),
+        databaseId:
+          currentDatabaseId
+    }
+  )
+}
+
   /*
    * 当前阶段只完成识别，
    * 仍然使用原版数据库渲染。
