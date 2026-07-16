@@ -1,13 +1,13 @@
 import { siteConfig } from '@/lib/config'
 import { compressImage, mapImgUrl } from '@/lib/db/notion/mapImage'
 import NotionLink from '@/components/NotionLink'
+import SmartCollection from '@/components/comic-list/SmartCollection'
 import { isBrowser, loadExternalResource } from '@/lib/utils'
 import mediumZoom from '@fisch0920/medium-zoom'
 import 'katex/dist/katex.min.css'
 import dynamic from 'next/dynamic'
 import { useEffect, useRef } from 'react'
 import { NotionRenderer, useNotionContext } from 'react-notion-x'
-import ComicReadTableEnhancer from '@/components/ComicReadTableEnhancer'
 
 /**
  * Notion 自定义 Emoji 映射表
@@ -235,6 +235,25 @@ const NotionPage = ({ post, className }) => {
   // const cleanBlockMap = cleanBlocksWithWarn(post?.blockMap);
   // console.log('NotionPage render with post:', post);
 
+    /**
+   * 所有 Notion 数据库先经过 SmartCollection。
+   *
+   * SmartCollection 之后负责判断：
+   * - 普通数据库：继续使用 OriginalCollection
+   * - 漫画数据库：使用自定义 React 表格
+   */
+  const Collection = collectionProps => {
+    return (
+      <SmartCollection
+        {...collectionProps}
+        pageId={post?.id}
+        OriginalCollection={OriginalCollection}
+      />
+    )
+  }
+
+  return (
+
   return (
     <div
       id='notion-article'
@@ -256,7 +275,6 @@ const NotionPage = ({ post, className }) => {
         }}
       />
 
-      <ComicReadTableEnhancer enabled={true} />
 
       <AdEmbed />
       {hasCodeBlock(post?.blockMap) && <PrismMac />}
@@ -451,7 +469,7 @@ const AdEmbed = dynamic(
   { ssr: true }
 )
 
-const Collection = dynamic(
+const OriginalCollection = dynamic(
   () =>
     import('react-notion-x/build/third-party/collection').then(
       m => m.Collection
