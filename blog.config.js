@@ -94,7 +94,7 @@ const BLOG = {
       .NEXT_PUBLIC_COMIC_DATABASE_ID ||
     '2ccff97e540781698719eaa396bf8860',
     '35eff97e540780159466eda50e628173',
-    '2ccff97e540781f89acbd2f0c5896c80'
+    '2ccff97e540781f89acbd2f0c5896c80',
 }
 
 module.exports = BLOG
