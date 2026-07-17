@@ -10,6 +10,13 @@ import {
 const ComicAuthContext =
   createContext(null)
 
+const VALID_READING_STATUSES =
+  new Set([
+    'want',
+    'reading',
+    'finished'
+  ])
+
 export const ComicAuthProvider = ({
   children
 }) => {
@@ -22,9 +29,20 @@ export const ComicAuthProvider = ({
   const [loading, setLoading] =
     useState(true)
 
-  const [initializationError,
-    setInitializationError] =
-    useState('')
+  const [
+    initializationError,
+    setInitializationError
+  ] = useState('')
+
+  const [
+    readingStatuses,
+    setReadingStatuses
+  ] = useState({})
+
+  const [
+    readingStatusesLoading,
+    setReadingStatusesLoading
+  ] = useState(false)
 
   useEffect(() => {
     let mounted = true
@@ -56,27 +74,23 @@ export const ComicAuthProvider = ({
 
         setSupabase(client)
 
-        /*
-         * 监听登录、退出和会话刷新。
-         *
-         * 回调中只更新 React 状态，
-         * 不执行额外异步 Supabase 请求。
-         */
         const {
           data: authListener
-        } =
-          client.auth
-            .onAuthStateChange(
-              (_event, nextSession) => {
-                if (!mounted) {
-                  return
-                }
-
-                setSession(
-                  nextSession
-                )
+        } = client.auth
+          .onAuthStateChange(
+            (
+              _event,
+              nextSession
+            ) => {
+              if (!mounted) {
+                return
               }
-            )
+
+              setSession(
+                nextSession
+              )
+            }
+          )
 
         subscription =
           authListener.subscription
@@ -84,9 +98,8 @@ export const ComicAuthProvider = ({
         const {
           data,
           error
-        } =
-          await client.auth
-            .getSession()
+        } = await client.auth
+          .getSession()
 
         if (!mounted) {
           return
@@ -121,10 +134,232 @@ export const ComicAuthProvider = ({
 
     return () => {
       mounted = false
-
       subscription?.unsubscribe()
     }
   }, [])
+
+  /**
+   * 登录用户变化时，
+   * 从 Supabase 读取全部阅读状态。
+   */
+  useEffect(() => {
+    const userId =
+      session?.user?.id
+
+    if (
+      !supabase ||
+      !userId
+    ) {
+      setReadingStatuses({})
+      setReadingStatusesLoading(
+        false
+      )
+
+      return
+    }
+
+    let cancelled = false
+
+    const loadReadingStatuses =
+      async () => {
+        setReadingStatusesLoading(
+          true
+        )
+
+        const {
+          data,
+          error
+        } = await supabase
+          .from('reading_status')
+          .select(
+            'comic_id, status'
+          )
+          .eq(
+            'user_id',
+            userId
+          )
+
+        if (cancelled) {
+          return
+        }
+
+        if (error) {
+          console.error(
+            '[ComicAuthContext] 读取阅读状态失败',
+            error
+          )
+
+          setReadingStatuses({})
+          setReadingStatusesLoading(
+            false
+          )
+
+          return
+        }
+
+        const nextStatuses = {}
+
+        ;(data || []).forEach(
+          record => {
+            if (
+              record?.comic_id &&
+              VALID_READING_STATUSES
+                .has(record.status)
+            ) {
+              nextStatuses[
+                record.comic_id
+              ] = record.status
+            }
+          }
+        )
+
+        setReadingStatuses(
+          nextStatuses
+        )
+
+        setReadingStatusesLoading(
+          false
+        )
+      }
+
+    loadReadingStatuses()
+
+    return () => {
+      cancelled = true
+    }
+  }, [
+    supabase,
+    session?.user?.id
+  ])
+
+  /**
+   * 保存或清除某本漫画的阅读状态。
+   */
+  const saveReadingStatus =
+    useCallback(
+      async (
+        comicId,
+        status
+      ) => {
+        const userId =
+          session?.user?.id
+
+        if (
+          !supabase ||
+          !userId
+        ) {
+          return {
+            error: new Error(
+              '请先登录。'
+            )
+          }
+        }
+
+        const normalizedComicId =
+          String(comicId || '')
+            .replace(/-/g, '')
+            .toLowerCase()
+
+        if (
+          !/^[a-f0-9]{32}$/.test(
+            normalizedComicId
+          )
+        ) {
+          return {
+            error: new Error(
+              '无法读取这条漫画记录的 Notion ID。'
+            )
+          }
+        }
+
+        let error = null
+
+        if (
+          VALID_READING_STATUSES
+            .has(status)
+        ) {
+          const result =
+            await supabase
+              .from(
+                'reading_status'
+              )
+              .upsert(
+                {
+                  user_id: userId,
+                  comic_id:
+                    normalizedComicId,
+                  status,
+                  updated_at:
+                    new Date()
+                      .toISOString()
+                },
+                {
+                  onConflict:
+                    'user_id,comic_id'
+                }
+              )
+
+          error = result.error
+        } else {
+          const result =
+            await supabase
+              .from(
+                'reading_status'
+              )
+              .delete()
+              .eq(
+                'user_id',
+                userId
+              )
+              .eq(
+                'comic_id',
+                normalizedComicId
+              )
+
+          error = result.error
+        }
+
+        if (error) {
+          console.error(
+            '[ComicAuthContext] 保存阅读状态失败',
+            error
+          )
+
+          return { error }
+        }
+
+        setReadingStatuses(
+          currentStatuses => {
+            const nextStatuses = {
+              ...currentStatuses
+            }
+
+            if (
+              VALID_READING_STATUSES
+                .has(status)
+            ) {
+              nextStatuses[
+                normalizedComicId
+              ] = status
+            } else {
+              delete nextStatuses[
+                normalizedComicId
+              ]
+            }
+
+            return nextStatuses
+          }
+        )
+
+        return {
+          error: null
+        }
+      },
+      [
+        supabase,
+        session?.user?.id
+      ]
+    )
 
   const signIn = useCallback(
     async ({
@@ -169,13 +404,14 @@ export const ComicAuthProvider = ({
           ? undefined
           : `${window.location.origin}${window.location.pathname}`
 
-      return supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo
-        }
-      })
+      return supabase.auth
+        .signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo
+          }
+        })
     },
     [supabase]
   )
@@ -190,7 +426,8 @@ export const ComicAuthProvider = ({
         }
       }
 
-      return supabase.auth.signOut()
+      return supabase.auth
+        .signOut()
     },
     [supabase]
   )
@@ -203,6 +440,9 @@ export const ComicAuthProvider = ({
         session?.user || null,
       loading,
       initializationError,
+      readingStatuses,
+      readingStatusesLoading,
+      saveReadingStatus,
       signIn,
       signUp,
       signOut
@@ -212,6 +452,9 @@ export const ComicAuthProvider = ({
       session,
       loading,
       initializationError,
+      readingStatuses,
+      readingStatusesLoading,
+      saveReadingStatus,
       signIn,
       signUp,
       signOut
@@ -227,10 +470,9 @@ export const ComicAuthProvider = ({
 }
 
 export const useComicAuth = () => {
-  const context =
-    useContext(
-      ComicAuthContext
-    )
+  const context = useContext(
+    ComicAuthContext
+  )
 
   if (!context) {
     throw new Error(

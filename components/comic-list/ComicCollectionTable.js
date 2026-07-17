@@ -3,11 +3,6 @@ import { getBlockCollectionId } from 'notion-utils'
 import { useComicAuth } from './ComicAuthContext'
 import styles from './ComicCollectionTable.module.css'
 
-const STORAGE_KEY =
-  'notionnext-comic-reading-status-v2'
-
-const OLD_STORAGE_KEY =
-  'notionnext-comic-read-status-v1'
 
 const STATUS_META = {
   want: {
@@ -73,95 +68,6 @@ const removeStatusElementsForCollection =
     closeActiveStatusMenu?.()
     closeActiveStatusMenu = null
   }
-
-const readSavedState = () => {
-  if (typeof window === 'undefined') {
-    return {}
-  }
-
-  try {
-    const currentValue =
-      window.localStorage.getItem(
-        STORAGE_KEY
-      )
-
-    if (currentValue) {
-      const parsed =
-        JSON.parse(currentValue)
-
-      return parsed &&
-        typeof parsed === 'object'
-        ? parsed
-        : {}
-    }
-
-    const oldValue =
-      window.localStorage.getItem(
-        OLD_STORAGE_KEY
-      )
-
-    if (!oldValue) {
-      return {}
-    }
-
-    const oldState =
-      JSON.parse(oldValue)
-
-    const migratedState = {}
-
-    Object.entries(oldState).forEach(
-      ([comicId, checked]) => {
-        if (checked === true) {
-          migratedState[comicId] =
-            'finished'
-        }
-      }
-    )
-
-    window.localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(migratedState)
-    )
-
-    return migratedState
-  } catch (error) {
-    console.warn(
-      '[ComicCollectionTable] 读取状态失败',
-      error
-    )
-
-    return {}
-  }
-}
-
-const saveStatus = (
-  comicId,
-  status
-) => {
-  try {
-    const state = readSavedState()
-
-    if (STATUS_META[status]) {
-      state[comicId] = status
-    } else {
-      delete state[comicId]
-    }
-
-    window.localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(state)
-    )
-
-    return true
-  } catch (error) {
-    console.warn(
-      '[ComicCollectionTable] 保存状态失败',
-      error
-    )
-
-    return false
-  }
-}
 
 const clearElement = element => {
   while (element.firstChild) {
@@ -246,7 +152,8 @@ const renderTrigger = (
 
 const openStatusMenu = (
   trigger,
-  comicId
+  comicId,
+  saveReadingStatus
 ) => {
   closeActiveStatusMenu?.()
 
@@ -319,23 +226,34 @@ const openStatusMenu = (
     }
   }
 
-  const applyStatus = nextStatus => {
-    if (
-      !saveStatus(
+    const applyStatus =
+    async nextStatus => {
+      trigger.disabled = true
+
+      const {
+        error
+      } = await saveReadingStatus(
         comicId,
         nextStatus
       )
-    ) {
-      return
+
+      trigger.disabled = false
+
+      if (error) {
+        window.alert(
+          `阅读状态保存失败：${error.message}`
+        )
+
+        return
+      }
+
+      renderTrigger(
+        trigger,
+        nextStatus
+      )
+
+      closeMenu()
     }
-
-    renderTrigger(
-      trigger,
-      nextStatus
-    )
-
-    closeMenu()
-  }
 
   STATUS_ORDER.forEach(status => {
     const option =
@@ -366,7 +284,7 @@ const openStatusMenu = (
         event.preventDefault()
         event.stopPropagation()
 
-        applyStatus(status)
+        void applyStatus(status)
       }
     )
 
@@ -388,7 +306,7 @@ const openStatusMenu = (
         event.preventDefault()
         event.stopPropagation()
 
-        applyStatus('')
+        void applyStatus('')
       }
     )
 
@@ -481,10 +399,7 @@ const openStatusMenu = (
     closeMenu
 }
 
-const getFallbackComicId = (
-  row,
-  index
-) => {
+const getFallbackComicId = row => {
   const links =
     row.querySelectorAll('a[href]')
 
@@ -497,7 +412,9 @@ const getFallbackComicId = (
     )
 
     const comicId =
-      normalizeNotionId(match?.[1])
+      normalizeNotionId(
+        match?.[1]
+      )
 
     if (
       /^[a-f0-9]{32}$/.test(
@@ -508,11 +425,7 @@ const getFallbackComicId = (
     }
   }
 
-  const title =
-    row.textContent?.trim() ||
-    `row-${index}`
-
-  return `title-${title}`
+  return null
 }
 
 const ComicCollectionTable = ({
@@ -528,10 +441,13 @@ const ComicCollectionTable = ({
    * 只有 user 存在时，
    * 才允许显示和操作阅读状态列。
    */
-  const {
-    user,
-    loading
-  } = useComicAuth()
+    const {
+      user,
+      loading,
+      readingStatuses,
+      readingStatusesLoading,
+      saveReadingStatus
+    } = useComicAuth()
 
   const collectionClassName =
     `comic-collection-${normalizeNotionId(
@@ -554,10 +470,11 @@ const ComicCollectionTable = ({
    * 也不会留下上一位用户的状态。
    */
   useEffect(() => {
-    if (
-      loading ||
-      user
-    ) {
+      if (
+        loading ||
+        readingStatusesLoading ||
+        !user
+      ) {
       return
     }
 
@@ -628,9 +545,6 @@ const ComicCollectionTable = ({
       []
     ).map(normalizeNotionId)
 
-    const savedState =
-      readSavedState()
-
     const getRows = () => {
       if (!body) {
         return []
@@ -696,7 +610,9 @@ const ComicCollectionTable = ({
 
       renderTrigger(
         trigger,
-        savedState[comicId] || ''
+        readingStatuses[
+          comicId
+        ] || ''
       )
 
       cell.appendChild(trigger)
@@ -795,10 +711,16 @@ const ComicCollectionTable = ({
 
       const comicId =
         blockIds[rowIndex] ||
-        getFallbackComicId(
-          row,
+        getFallbackComicId(row)
+
+      if (!comicId) {
+        console.warn(
+          '[ComicCollectionTable] 无法读取漫画的 Notion 页面 ID',
           rowIndex
         )
+
+        return
+      }
 
       row.prepend(
         createStatusCell(comicId)
@@ -893,7 +815,8 @@ const ComicCollectionTable = ({
 
       openStatusMenu(
         trigger,
-        trigger.dataset.comicId
+        trigger.dataset.comicId,
+        saveReadingStatus
       )
     }
 
@@ -1023,6 +946,9 @@ const ComicCollectionTable = ({
     block?.id,
     collectionClassName,
     loading,
+    readingStatuses,
+    readingStatusesLoading,
+    saveReadingStatus,
     user?.id
   ])
 
