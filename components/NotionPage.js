@@ -8,6 +8,8 @@ import 'katex/dist/katex.min.css'
 import dynamic from 'next/dynamic'
 import { useEffect, useRef } from 'react'
 import { NotionRenderer, useNotionContext } from 'react-notion-x'
+import {ComicAuthProvider} from '@/components/comic-list/ComicAuthContext'
+import ComicAuthPanel from '@/components/comic-list/ComicAuthPanel'
 
 /**
  * Notion 自定义 Emoji 映射表
@@ -88,6 +90,19 @@ const mapNotionImageUrl = (img, block) => {
 }
 
 /**
+ * 统一 Notion 页面 ID 的格式。
+ *
+ * Notion 页面 ID 有时带短横线，有时不带；
+ * 这里统一移除短横线并转成小写，
+ * 方便准确判断当前是不是漫画清单页面。
+ */
+const normalizeNotionId = id => {
+  return String(id || '')
+    .replace(/-/g, '')
+    .toLowerCase()
+}
+
+/**
  * 整个站点的核心组件
  * 将Notion数据渲染成网页
  * @param {*} param0
@@ -145,6 +160,21 @@ const NotionPage = ({ post, className }) => {
 
   // 修复 Notion Button 的 automation / automation_action 双层 value 包装
   const notionRecordMap = normalizeNotionButtonActions(post?.blockMap)
+
+    /**
+   * 判断当前文章是否为漫画阅读清单页。
+   *
+   * 只有该页面会显示注册、登录和退出面板，
+   * 其他文章继续保持原来的渲染方式。
+   */
+  const isComicReadingPage =
+    normalizeNotionId(post?.id) ===
+    normalizeNotionId(
+      siteConfig(
+        'COMIC_READING_PAGE_ID',
+        ''
+      )
+    )
 
   const zoomRef = useRef(null)
   const IMAGE_ZOOM_IN_WIDTH = siteConfig('IMAGE_ZOOM_IN_WIDTH', 1200)
@@ -235,12 +265,12 @@ const NotionPage = ({ post, className }) => {
   // const cleanBlockMap = cleanBlocksWithWarn(post?.blockMap);
   // console.log('NotionPage render with post:', post);
 
-    /**
+  /**
    * 所有 Notion 数据库先经过 SmartCollection。
    *
-   * SmartCollection 之后负责判断：
+   * SmartCollection 负责判断：
    * - 普通数据库：继续使用 OriginalCollection
-   * - 漫画数据库：使用自定义 React 表格
+   * - 漫画数据库：加入阅读状态功能
    */
   const Collection = collectionProps => {
     return (
@@ -252,27 +282,44 @@ const NotionPage = ({ post, className }) => {
     )
   }
 
+  /**
+   * 保留原来的 NotionRenderer 配置。
+   *
+   * 漫画清单页会把它放进登录状态 Provider；
+   * 普通文章仍然直接使用原来的渲染结果。
+   */
+  const notionRenderer = (
+    <NotionRenderer
+      recordMap={notionRecordMap}
+      mapPageUrl={mapPageUrl}
+      mapImageUrl={mapNotionImageUrl}
+      components={{
+        Code,
+        Collection,
+        Embed: NotionEmbed,
+        Equation,
+        Link: NotionLink,
+        Modal,
+        Pdf,
+        Quote: NotionQuote,
+        Tweet
+      }}
+    />
+  )
+
   return (
     <div
       id='notion-article'
       className={`mx-auto overflow-hidden ${className || ''}`}>
-      <NotionRenderer
-        recordMap={notionRecordMap}
-        mapPageUrl={mapPageUrl}
-        mapImageUrl={mapNotionImageUrl}
-        components={{
-          Code,
-          Collection,
-          Embed: NotionEmbed,
-          Equation,
-          Link: NotionLink,
-          Modal,
-          Pdf,
-          Quote: NotionQuote,
-          Tweet
-        }}
-      />
 
+      {isComicReadingPage ? (
+        <ComicAuthProvider>
+          <ComicAuthPanel />
+          {notionRenderer}
+        </ComicAuthProvider>
+      ) : (
+        notionRenderer
+      )}
 
       <AdEmbed />
       {hasCodeBlock(post?.blockMap) && <PrismMac />}
