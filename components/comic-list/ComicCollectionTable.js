@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { getBlockCollectionId } from 'notion-utils'
+import { useComicAuth } from './ComicAuthContext'
 import styles from './ComicCollectionTable.module.css'
 
 const STORAGE_KEY =
@@ -485,6 +486,17 @@ const ComicCollectionTable = ({
   ctx,
   ...collectionProps
 }) => {
+      /**
+   * 获取当前登录状态。
+   *
+   * loading 为 true 时，Supabase 仍在检查浏览器会话；
+   * user 存在时，表示当前已有登录用户。
+   */
+  const {
+    user,
+    loading
+  } = useComicAuth()
+
   const collectionClassName =
     `comic-collection-${normalizeNotionId(
       databaseId
@@ -497,13 +509,24 @@ const ComicCollectionTable = ({
     .filter(Boolean)
     .join(' ')
 
-  useEffect(() => {
-    if (
-      !block ||
-      !ctx?.recordMap
-    ) {
-      return
-    }
+    useEffect(() => {
+      /**
+       * 登录状态还在检查，或当前没有登录用户时，
+       * 不向数据库插入“状态”表头和状态单元格。
+       */
+      if (
+        loading ||
+        !user
+      ) {
+        return
+      }
+
+      if (
+        !block ||
+        !ctx?.recordMap
+      ) {
+        return
+      }
 
     let disposed = false
     let locateTimer = null
@@ -930,6 +953,8 @@ const ComicCollectionTable = ({
   }, [
     block?.id,
     collectionClassName
+    loading,
+    user?.id
   ])
 
   return (
