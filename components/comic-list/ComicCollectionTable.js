@@ -38,6 +38,42 @@ const normalizeNotionId = id => {
     .toLowerCase()
 }
 
+/**
+ * 移除指定漫画数据库中
+ * 由本站插入的阅读状态界面。
+ *
+ * 退出登录、未登录刷新或
+ * 登录状态切换时都会调用，
+ * 防止旧状态列残留在页面中。
+ */
+const removeStatusElementsForCollection =
+  collectionClassName => {
+    if (
+      typeof document === 'undefined'
+    ) {
+      return
+    }
+
+    const root =
+      document.querySelector(
+        `.${collectionClassName}`
+      )
+
+    root
+      ?.querySelectorAll(
+        [
+          '[data-comic-read-header]',
+          '[data-comic-read-cell]'
+        ].join(',')
+      )
+      .forEach(element => {
+        element.remove()
+      })
+
+    closeActiveStatusMenu?.()
+    closeActiveStatusMenu = null
+  }
+
 const readSavedState = () => {
   if (typeof window === 'undefined') {
     return {}
@@ -486,11 +522,11 @@ const ComicCollectionTable = ({
   ctx,
   ...collectionProps
 }) => {
-      /**
-   * 获取当前登录状态。
+  /**
+   * 当前登录状态。
    *
-   * loading 为 true 时，Supabase 仍在检查浏览器会话；
-   * user 存在时，表示当前已有登录用户。
+   * 只有 user 存在时，
+   * 才允许显示和操作阅读状态列。
    */
   const {
     user,
@@ -509,24 +545,54 @@ const ComicCollectionTable = ({
     .filter(Boolean)
     .join(' ')
 
-    useEffect(() => {
-      /**
-       * 登录状态还在检查，或当前没有登录用户时，
-       * 不向数据库插入“状态”表头和状态单元格。
-       */
-      if (
-        loading ||
-        !user
-      ) {
-        return
-      }
+  /**
+   * 未登录或退出登录后，
+   * 立即移除已经插入的状态列。
+   *
+   * 这个 effect 独立负责清理，
+   * 即使数据库组件没有重新挂载，
+   * 也不会留下上一位用户的状态。
+   */
+  useEffect(() => {
+    if (
+      loading ||
+      user
+    ) {
+      return
+    }
 
-      if (
-        !block ||
-        !ctx?.recordMap
-      ) {
-        return
-      }
+    removeStatusElementsForCollection(
+      collectionClassName
+    )
+  }, [
+    collectionClassName,
+    loading,
+    user?.id
+  ])
+
+  useEffect(() => {
+    /**
+     * Supabase 仍在检查会话，
+     * 或当前没有登录用户时，
+     * 不创建阅读状态列。
+     */
+    if (
+      loading ||
+      !user
+    ) {
+      removeStatusElementsForCollection(
+        collectionClassName
+      )
+
+      return
+    }
+
+    if (
+      !block ||
+      !ctx?.recordMap
+    ) {
+      return
+    }
 
     let disposed = false
     let locateTimer = null
@@ -592,9 +658,7 @@ const ComicCollectionTable = ({
         })
     }
 
-    const createStatusCell = (
-      comicId
-    ) => {
+    const createStatusCell = comicId => {
       const cell =
         document.createElement('div')
 
@@ -833,65 +897,70 @@ const ComicCollectionTable = ({
       )
     }
 
-    const attachToTable = (
-      collectionRoot
-    ) => {
-      root = collectionRoot
+    const attachToTable =
+      collectionRoot => {
+        root = collectionRoot
 
-      body = root.querySelector(
-        '.notion-table-body'
-      )
-
-      const headerInner =
-        root.querySelector(
-          '.notion-table-header-inner'
+        body = root.querySelector(
+          '.notion-table-body'
         )
 
-      if (!body || !headerInner) {
-        return false
-      }
+        const headerInner =
+          root.querySelector(
+            '.notion-table-header-inner'
+          )
 
-      root.addEventListener(
-        'click',
-        handleRootClick
-      )
+        if (!body || !headerInner) {
+          return false
+        }
 
-      bodyObserver =
-        new MutationObserver(
-          mutations => {
-            const addedRows = []
+        root.addEventListener(
+          'click',
+          handleRootClick
+        )
 
-            mutations.forEach(
-              mutation => {
-                mutation.addedNodes.forEach(
-                  node => {
-                    if (
-                      node.nodeType === 1 &&
-                      node.classList.contains(
-                        'notion-table-row'
-                      )
-                    ) {
-                      addedRows.push(node)
+        bodyObserver =
+          new MutationObserver(
+            mutations => {
+              const addedRows = []
+
+              mutations.forEach(
+                mutation => {
+                  mutation.addedNodes.forEach(
+                    node => {
+                      if (
+                        node.nodeType === 1 &&
+                        node.classList.contains(
+                          'notion-table-row'
+                        )
+                      ) {
+                        addedRows.push(
+                          node
+                        )
+                      }
                     }
-                  }
+                  )
+                }
+              )
+
+              if (
+                addedRows.length > 0
+              ) {
+                enqueueRows(
+                  addedRows
                 )
               }
-            )
-
-            if (addedRows.length > 0) {
-              enqueueRows(addedRows)
             }
-          }
-        )
+          )
 
-      bodyObserver.observe(body, {
-        childList: true
-      })
+        bodyObserver.observe(body, {
+          childList: true
+        })
 
-      enqueueRows(getRows())
+        enqueueRows(getRows())
 
-      return true
-    }
+        return true
+      }
 
     const locateTable = () => {
       if (disposed) {
@@ -952,7 +1021,7 @@ const ComicCollectionTable = ({
     }
   }, [
     block?.id,
-    collectionClassName
+    collectionClassName,
     loading,
     user?.id
   ])
