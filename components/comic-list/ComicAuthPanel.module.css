@@ -178,55 +178,88 @@
  * ========================================== */
 
 .loginTrigger {
-  display: inline-flex;
+  appearance: none;
+  -webkit-appearance: none;
+
+  display: inline-flex !important;
   align-items: center;
   justify-content: center;
 
-  width: auto;
-  min-width: 0;
-  height: 42px;
+  width: 84px !important;
+  min-width: 84px !important;
+  max-width: 84px !important;
 
-  padding: 0 14px;
+  height: 43px !important;
+  min-height: 43px !important;
+  max-height: 43px !important;
 
-  box-sizing: border-box;
+  margin: 0 !important;
+  padding: 0 !important;
 
-  border: 1px solid #aaaaaa;
-  border-radius: 4px;
+  box-sizing: border-box !important;
 
-  background: #f0f0f0;
-  color: #111111;
+  border:
+    1px solid
+    #9b9a97 !important;
+
+  border-radius:
+    4px !important;
+
+  background:
+    #f0efee !important;
+
+  color:
+    #111111 !important;
+
+  box-shadow:
+    none !important;
 
   font: inherit;
-  font-size: 16px;
+  font-size: 16px !important;
   font-weight: 400;
-  line-height: 1;
+  line-height: 1 !important;
+
+  text-align: center;
 
   cursor: pointer;
 
   transition:
-    background-color 120ms ease,
-    border-color 120ms ease;
+    background-color
+      100ms ease;
 }
 
-
-/*
- * 鼠标经过时，
- * 变成参考图上方按钮那种较深的灰色。
- */
-
 .loginTrigger:hover {
-  background: #cfcfcf;
-  border-color: #999999;
+  border-color:
+    #9b9a97 !important;
+
+  background:
+    #d7d7d6 !important;
+
+  color:
+    #111111 !important;
+
+  box-shadow:
+    none !important;
 }
 
 .loginTrigger:active {
-  background: #bfbfbf;
-  border-color: #8f8f8f;
+  background:
+    #cdcdcc !important;
+}
+
+.loginTrigger:focus {
+  outline: none;
 }
 
 .loginTrigger:focus-visible {
-  outline: 2px solid
-    rgba(30, 30, 30, 0.3);
+  outline:
+    2px solid
+    rgba(
+      35,
+      35,
+      35,
+      0.28
+    );
 
   outline-offset: 2px;
 }
