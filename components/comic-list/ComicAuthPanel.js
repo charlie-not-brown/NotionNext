@@ -7,11 +7,11 @@ import {
   useComicAuth
 } from './ComicAuthContext'
 
-import styles from './ComicAuthPanel.module.css'
-
 import {
   getComicEmailAvatar
 } from './comicEmailAvatar'
+
+import styles from './ComicAuthPanel.module.css'
 
 const getEmailInitial = email => {
   const normalizedEmail =
@@ -19,9 +19,11 @@ const getEmailInitial = email => {
       ? email.trim()
       : ''
 
-  return normalizedEmail
-    .charAt(0)
-    .toUpperCase() || '?'
+  return (
+    normalizedEmail
+      .charAt(0)
+      .toUpperCase() || '?'
+  )
 }
 
 const ComicAuthPanel = () => {
@@ -66,6 +68,13 @@ const ComicAuthPanel = () => {
     setAvatarFailed
   ] = useState(false)
 
+  /*
+   * 头像读取顺序：
+   *
+   * 1. Supabase 登录提供的头像
+   * 2. 根据邮箱获取 QQ / Cravatar 头像
+   * 3. 图片获取失败后显示邮箱首字母
+   */
   const avatarUrl =
     user?.user_metadata
       ?.avatar_url ||
@@ -83,8 +92,7 @@ const ComicAuthPanel = () => {
   ])
 
   /*
-   * 登录状态出现后，
-   * 自动收起登录表单。
+   * 登录成功后自动关闭登录表单。
    */
   useEffect(() => {
     if (user) {
@@ -218,7 +226,9 @@ const ComicAuthPanel = () => {
 
   if (user) {
     const emailInitial =
-      getEmailInitial(user.email)
+      getEmailInitial(
+        user.email
+      )
 
     return (
       <div

@@ -1,42 +1,50 @@
-const getUserAvatarUrl = currentUser => {
-  const providerAvatar =
-    currentUser?.user_metadata
-      ?.avatar_url ||
-    currentUser?.user_metadata
-      ?.picture ||
-    ''
+import {
+  md5
+} from 'js-md5'
 
-  if (providerAvatar) {
-    return providerAvatar
-  }
+export const getComicEmailAvatar =
+  email => {
+    const normalizedEmail =
+      String(email || '')
+        .trim()
+        .toLowerCase()
 
-  const normalizedEmail =
-    String(
-      currentUser?.email || ''
-    )
-      .trim()
-      .toLowerCase()
+    if (!normalizedEmail) {
+      return ''
+    }
 
-  const [
-    emailName,
-    emailDomain
-  ] = normalizedEmail.split('@')
+    const [
+      emailName,
+      emailDomain
+    ] = normalizedEmail.split('@')
 
-  /*
-   * QQ 邮箱可以根据数字 QQ 号读取头像。
-   */
-  if (
-    emailDomain === 'qq.com' &&
-    /^\d+$/.test(emailName)
-  ) {
+    /*
+     * 数字 QQ 邮箱优先读取 QQ 头像。
+     */
+    if (
+      emailDomain === 'qq.com' &&
+      /^\d+$/.test(emailName)
+    ) {
+      return (
+        'https://q1.qlogo.cn/g' +
+        `?b=qq&nk=${emailName}` +
+        '&s=100'
+      )
+    }
+
+    /*
+     * 其他邮箱使用邮箱 MD5
+     * 查询 Cravatar。
+     *
+     * d=404 表示没有对应头像时
+     * 返回加载失败，让登录面板
+     * 自动显示邮箱首字母。
+     */
+    const emailHash =
+      md5(normalizedEmail)
+
     return (
-      'https://q1.qlogo.cn/g' +
-      `?b=qq&nk=${emailName}&s=100`
+      'https://cravatar.cn/avatar/' +
+      `${emailHash}?s=96&d=404`
     )
   }
-
-  return ''
-}
-
-const avatarUrl =
-  getUserAvatarUrl(user)
