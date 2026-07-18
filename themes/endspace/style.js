@@ -255,6 +255,163 @@ export const Style = () => {
         line-height: 1.75;
       }
 
+        /* ============================================
+   * Notion 行内操作按钮
+   *
+   * 识别规则：
+   * 同一段文字同时具有“链接”和“行内代码”格式。
+   * ============================================ */
+
+  #theme-endspace #notion-article .notion-inline-action {
+    box-sizing: border-box;
+
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 0;
+    max-width: 14rem;
+
+    margin: 0 0.18em;
+    padding: 0.42rem 0.82rem;
+
+    border: 1px solid var(--endspace-text-primary);
+    border-radius: 0;
+
+    background: var(--endspace-accent-yellow);
+    color: var(--endspace-text-primary) !important;
+
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 0.76em;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.04em;
+
+    text-decoration: none !important;
+    text-shadow: none !important;
+    white-space: nowrap;
+    overflow: hidden;
+
+    vertical-align: middle;
+    opacity: 1 !important;
+
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.18);
+
+    transition:
+      transform 0.18s ease,
+      box-shadow 0.18s ease,
+      background-color 0.18s ease;
+  }
+
+  /*
+   * 防止正文里针对 span、code 等元素的颜色规则
+   * 覆盖按钮文字颜色。
+   */
+  #theme-endspace #notion-article .notion-inline-action,
+  #theme-endspace #notion-article .notion-inline-action * {
+    color: var(--endspace-text-primary) !important;
+  }
+
+  #theme-endspace #notion-article .notion-inline-action:hover {
+    background: var(--endspace-text-primary);
+    color: var(--endspace-bg-primary) !important;
+
+    box-shadow: none;
+    transform: translateY(-1px);
+  }
+
+  #theme-endspace #notion-article .notion-inline-action:hover * {
+    color: var(--endspace-bg-primary) !important;
+  }
+
+  /*
+   * 去掉 Notion 原本的行内代码底色、圆角和内边距。
+   *
+   * display: contents 可以同时兼容：
+   * <a><code>文字</code></a>
+   * <code><a>文字</a></code>
+   */
+  #theme-endspace #notion-article .notion-inline-action-code {
+    display: contents !important;
+
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+
+    background: transparent !important;
+    box-shadow: none !important;
+
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+  }
+
+  /* ============================================
+   * 一级标题右侧按钮
+   * ============================================ */
+
+  #theme-endspace #notion-article .notion-heading-with-action {
+    /*
+     * 给右侧按钮预留位置，
+     * 防止标题文字跑到按钮下面。
+     */
+    padding-right: min(14rem, 42%) !important;
+
+    min-height: 2.6rem;
+  }
+
+  #theme-endspace
+    #notion-article
+    .notion-heading-with-action
+    .notion-heading-action {
+    position: absolute !important;
+
+    top: 50%;
+    right: 0;
+
+    max-width: min(13rem, 40%);
+
+    margin: 0 !important;
+
+    /*
+     * 一级标题字体很大，
+     * 这里单独固定按钮字号。
+     */
+    padding: 0.5rem 0.9rem;
+
+    font-size: 0.76rem;
+    line-height: 1;
+
+    transform: translateY(-50%);
+  }
+
+  #theme-endspace
+    #notion-article
+    .notion-heading-with-action
+    .notion-heading-action:hover {
+    transform: translateY(calc(-50% - 1px));
+  }
+
+  /* 手机端缩小右侧按钮和预留区域 */
+  @media (max-width: 640px) {
+    #theme-endspace #notion-article .notion-heading-with-action {
+      padding-right: 7rem !important;
+    }
+
+    #theme-endspace
+      #notion-article
+      .notion-heading-with-action
+      .notion-heading-action {
+      max-width: 6.5rem;
+
+      padding: 0.42rem 0.58rem;
+
+      font-size: 0.68rem;
+      letter-spacing: 0.02em;
+    }
+  }
+
       /* 隐藏 Notion 画廊卡片标题前的小图标 */
       #theme-endspace #notion-article
       .notion-collection-card-body

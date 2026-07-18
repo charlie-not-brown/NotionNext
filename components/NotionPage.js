@@ -262,6 +262,86 @@ const NotionPage = ({ post, className }) => {
     }
   }, [post])
 
+    /**
+   * 将“带链接的行内代码”识别为前端按钮。
+   *
+   * Notion 中的使用方法：
+   * 1. 选中文字并添加链接
+   * 2. 保持选中，按 Ctrl + E 设置为行内代码
+   *
+   * 普通段落中：显示为行内按钮
+   * 一级标题中：自动显示在标题右侧
+   */
+  useEffect(() => {
+    if (!isBrowser) return
+
+    const articleRoot = document.getElementById('notion-article')
+    if (!articleRoot) return
+
+    const decorateInlineActions = () => {
+      const links = articleRoot.querySelectorAll('a')
+
+      links.forEach(link => {
+        /**
+         * react-notion-x 根据富文本格式顺序不同，
+         * 最终可能生成：
+         *
+         * <a><code>按钮</code></a>
+         *
+         * 或：
+         *
+         * <code><a>按钮</a></code>
+         *
+         * 所以两种结构都需要识别。
+         */
+        const inlineCode =
+          link.querySelector('code') || link.closest('code')
+
+        /**
+         * 没有行内代码格式时保持普通链接。
+         *
+         * 如果它属于完整代码块，也不转换为按钮，
+         * 避免影响文章中的代码展示。
+         */
+        if (!inlineCode || inlineCode.closest('.notion-code')) return
+
+        link.classList.add('notion-inline-action')
+        inlineCode.classList.add('notion-inline-action-code')
+
+        /**
+         * Notion 的一级标题通常带有 .notion-h1。
+         * 同时兼容直接使用 h1 标签的情况。
+         */
+        const heading = link.closest('.notion-h1, h1')
+
+        if (heading) {
+          heading.classList.add('notion-heading-with-action')
+          link.classList.add('notion-heading-action')
+        }
+      })
+    }
+
+    /**
+     * 首次渲染后立即处理。
+     */
+    decorateInlineActions()
+
+    /**
+     * 部分 Notion 内容可能稍后才插入页面，
+     * 因此监听正文节点变化，再补做一次识别。
+     */
+    const observer = new MutationObserver(decorateInlineActions)
+
+    observer.observe(articleRoot, {
+      childList: true,
+      subtree: true
+    })
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [post])
+
   // const cleanBlockMap = cleanBlocksWithWarn(post?.blockMap);
   // console.log('NotionPage render with post:', post);
 
