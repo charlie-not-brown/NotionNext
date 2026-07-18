@@ -9,6 +9,10 @@ import {
 
 import styles from './ComicAuthPanel.module.css'
 
+import {
+  getComicEmailAvatar
+} from './comicEmailAvatar'
+
 const getEmailInitial = email => {
   const normalizedEmail =
     typeof email === 'string'
@@ -67,7 +71,9 @@ const ComicAuthPanel = () => {
       ?.avatar_url ||
     user?.user_metadata
       ?.picture ||
-    ''
+    getComicEmailAvatar(
+      user?.email
+    )
 
   useEffect(() => {
     setAvatarFailed(false)
