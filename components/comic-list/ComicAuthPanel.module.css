@@ -1,11 +1,16 @@
+/* ==========================================
+ * 文章内登录面板
+ * ========================================== */
+
 .panel {
-  width: 100%;
-  margin: 0 0 24px;
-  padding: 16px;
+  width: min(340px, 100%);
+  margin: 14px 0 24px;
+  padding: 20px;
 
   box-sizing: border-box;
 
   color: inherit;
+
   background:
     rgba(255, 255, 255, 0.56);
 
@@ -15,11 +20,14 @@
   border-radius: 10px;
 }
 
+
+/* 登录 / 注册切换 */
+
 .tabs {
   display: flex;
   gap: 6px;
 
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .tab,
@@ -43,15 +51,20 @@
     rgba(55, 53, 47, 0.1);
 }
 
+
+/* ==========================================
+ * 登录表单
+ *
+ * 改成纵向排列，
+ * 面板不会再又长又扁。
+ * ========================================== */
+
 .form {
   display: grid;
-  grid-template-columns:
-    minmax(0, 1fr)
-    minmax(0, 1fr)
-    auto;
+  grid-template-columns: 1fr;
 
-  gap: 10px;
-  align-items: end;
+  gap: 12px;
+  align-items: stretch;
 }
 
 .field {
@@ -70,7 +83,10 @@
 
   padding: 0 10px;
 
+  box-sizing: border-box;
+
   color: inherit;
+
   background:
     rgba(255, 255, 255, 0.74);
 
@@ -78,8 +94,6 @@
     rgba(55, 53, 47, 0.16);
 
   border-radius: 6px;
-
-  box-sizing: border-box;
 
   font: inherit;
   font-size: 14px;
@@ -92,13 +106,17 @@
     rgba(55, 53, 47, 0.42);
 }
 
-.primaryButton,
-.secondaryButton {
+
+/* 登录面板里的提交按钮 */
+
+.primaryButton {
+  width: 100%;
   height: 36px;
 
   padding: 0 14px;
 
   color: inherit;
+
   background:
     rgba(55, 53, 47, 0.1);
 
@@ -111,85 +129,32 @@
   cursor: pointer;
 }
 
-.primaryButton:disabled,
-.secondaryButton:disabled {
+.primaryButton:disabled {
   cursor: wait;
   opacity: 0.6;
 }
 
-.loggedInRow {
-  display: flex;
-  align-items: center;
-  justify-content:
-    space-between;
 
-  gap: 16px;
-}
+/* ==========================================
+ * 成功与错误提示
+ * ========================================== */
 
-.loggedInTitle {
-  margin: 0 0 2px;
-
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.email,
-.hint,
 .success,
 .error {
-  margin: 0;
+  margin: 10px 0 0;
 
   font-size: 13px;
   line-height: 1.6;
 }
 
-.email,
-.hint {
-  opacity: 0.7;
-}
-
 .success {
-  margin-top: 10px;
   color: #27714c;
 }
 
 .error {
-  margin-top: 10px;
   color: #b42318;
 }
 
-:global(.dark) .panel {
-  background:
-    rgba(255, 255, 255, 0.04);
-
-  border-color:
-    rgba(255, 255, 255, 0.1);
-}
-
-:global(.dark) .field input {
-  background:
-    rgba(255, 255, 255, 0.06);
-
-  border-color:
-    rgba(255, 255, 255, 0.12);
-}
-
-:global(.dark) .activeTab,
-:global(.dark) .primaryButton,
-:global(.dark) .secondaryButton {
-  background:
-    rgba(255, 255, 255, 0.09);
-}
-
-@media (max-width: 720px) {
-  .form {
-    grid-template-columns: 1fr;
-  }
-
-  .primaryButton {
-    width: 100%;
-  }
-}
 
 /* ==========================================
  * 登录区域外层
@@ -206,7 +171,10 @@
 
 
 /* ==========================================
- * 未登录状态：登录按钮
+ * 未登录时的“登录”按钮
+ *
+ * 尺寸按照下面的“编辑器”按钮缩小。
+ * 因为只有两个字，所以会比编辑器略窄。
  * ========================================== */
 
 .loginTrigger {
@@ -214,28 +182,19 @@
   align-items: center;
   justify-content: center;
 
-  min-width: 84px;
-  height: 44px;
-  padding: 0 18px;
+  width: auto;
+  min-width: 0;
+  height: 42px;
 
-  border: 1px solid
-    var(
-      --endspace-border-base,
-      #aeb0b3
-    );
-  border-radius: 3px;
+  padding: 0 14px;
 
-  background:
-    var(
-      --endspace-bg-base,
-      #f7f7f7
-    );
+  box-sizing: border-box;
 
-  color:
-    var(
-      --endspace-text-primary,
-      #1f1f1f
-    );
+  border: 1px solid #aaaaaa;
+  border-radius: 4px;
+
+  background: #f0f0f0;
+  color: #111111;
 
   font: inherit;
   font-size: 16px;
@@ -245,157 +204,50 @@
   cursor: pointer;
 
   transition:
-    background-color 160ms ease,
-    border-color 160ms ease;
+    background-color 120ms ease,
+    border-color 120ms ease;
 }
 
-.loginTrigger:hover {
-  background:
-    var(
-      --endspace-bg-hover,
-      #eeeeee
-    );
 
-  border-color:
-    var(
-      --endspace-text-muted,
-      #888888
-    );
+/*
+ * 鼠标经过时，
+ * 变成参考图上方按钮那种较深的灰色。
+ */
+
+.loginTrigger:hover {
+  background: #cfcfcf;
+  border-color: #999999;
+}
+
+.loginTrigger:active {
+  background: #bfbfbf;
+  border-color: #8f8f8f;
 }
 
 .loginTrigger:focus-visible {
   outline: 2px solid
-    var(
-      --endspace-text-primary,
-      #1f1f1f
-    );
+    rgba(30, 30, 30, 0.3);
 
   outline-offset: 2px;
 }
 
 
 /* ==========================================
- * 弹窗背景
+ * 文章内展开的登录面板
  * ========================================== */
 
-.modalOverlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
+.inlinePanel {
+  position: static;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: min(340px, 100%);
+  max-width: 340px;
 
-  padding: 16px;
-
-  background:
-    rgba(
-      0,
-      0,
-      0,
-      0.28
-    );
-
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter:
-    blur(2px);
+  margin-top: 14px;
 }
 
 
 /* ==========================================
- * 登录弹窗
- *
- * panel 继续使用原来的风格，
- * 这里只调整它的尺寸和位置。
- * ========================================== */
-
-.panel.modalPanel {
-  position: relative;
-
-  width:
-    min(
-      380px,
-      calc(100vw - 32px)
-    );
-
-  max-width: 380px;
-  min-height: 330px;
-  max-height:
-    calc(100vh - 32px);
-
-  margin: 0;
-  padding: 30px 28px 26px;
-
-  overflow-y: auto;
-
-  box-sizing: border-box;
-}
-
-
-/* ==========================================
- * 关闭按钮
- * ========================================== */
-
-.closeButton {
-  position: absolute;
-  top: 8px;
-  right: 12px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  width: 28px;
-  height: 28px;
-  padding: 0;
-
-  border: 0;
-  border-radius: 50%;
-
-  background: transparent;
-
-  color:
-    var(
-      --endspace-text-muted,
-      #777777
-    );
-
-  font: inherit;
-  font-size: 24px;
-  font-weight: 300;
-  line-height: 1;
-
-  cursor: pointer;
-}
-
-.closeButton:hover {
-  color:
-    var(
-      --endspace-text-primary,
-      #1f1f1f
-    );
-
-  background:
-    var(
-      --endspace-bg-hover,
-      rgba(
-        0,
-        0,
-        0,
-        0.05
-      )
-    );
-}
-
-.closeButton:disabled {
-  cursor: default;
-  opacity: 0.45;
-}
-
-
-/* ==========================================
- * 已登录状态
+ * 已登录后的用户信息
  * ========================================== */
 
 .userBar {
@@ -407,11 +259,7 @@
 
   gap: 9px;
 
-  color:
-    var(
-      --endspace-text-primary,
-      #1f1f1f
-    );
+  color: inherit;
 
   font-size: 14px;
   line-height: 1.4;
@@ -432,15 +280,11 @@
 
   object-fit: cover;
 
-  background:
-    var(
-      --endspace-bg-hover,
-      #eeeeee
-    );
+  background: #eeeeee;
 }
 
 
-/* 邮箱账户没有头像时的首字母头像 */
+/* 没有头像时显示邮箱首字母 */
 
 .userAvatarFallback {
   flex: 0 0 auto;
@@ -454,17 +298,8 @@
 
   border-radius: 50%;
 
-  background:
-    var(
-      --endspace-text-primary,
-      #252525
-    );
-
-  color:
-    var(
-      --endspace-bg-base,
-      #ffffff
-    );
+  background: #252525;
+  color: #ffffff;
 
   font-size: 12px;
   font-weight: 600;
@@ -482,11 +317,7 @@
 
   overflow: hidden;
 
-  color:
-    var(
-      --endspace-text-primary,
-      #1f1f1f
-    );
+  color: inherit;
 
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -504,12 +335,7 @@
   border-radius: 0;
 
   background: transparent;
-
-  color:
-    var(
-      --endspace-text-primary,
-      #1f1f1f
-    );
+  color: inherit;
 
   font: inherit;
   font-size: 14px;
@@ -517,24 +343,20 @@
   line-height: inherit;
 
   cursor: pointer;
-
-  text-decoration: none;
 }
 
 .signOutButton:hover {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  opacity: 0.62;
 }
 
 .signOutButton:disabled {
-  cursor: default;
-  opacity: 0.5;
-  text-decoration: none;
+  cursor: wait;
+  opacity: 0.45;
 }
 
 
 /* ==========================================
- * 紧凑提示信息
+ * 初始化与简短错误提示
  * ========================================== */
 
 .compactHint,
@@ -546,11 +368,7 @@
 }
 
 .compactHint {
-  color:
-    var(
-      --endspace-text-muted,
-      #777777
-    );
+  opacity: 0.7;
 }
 
 .compactError {
@@ -559,21 +377,58 @@
 
 
 /* ==========================================
+ * 深色模式
+ * ========================================== */
+
+:global(.dark) .panel {
+  background:
+    rgba(255, 255, 255, 0.04);
+
+  border-color:
+    rgba(255, 255, 255, 0.1);
+}
+
+:global(.dark) .field input {
+  background:
+    rgba(255, 255, 255, 0.06);
+
+  border-color:
+    rgba(255, 255, 255, 0.12);
+}
+
+:global(.dark) .activeTab,
+:global(.dark) .primaryButton {
+  background:
+    rgba(255, 255, 255, 0.09);
+}
+
+:global(.dark) .loginTrigger {
+  color: #eeeeee;
+  background: #454545;
+  border-color: #6a6a6a;
+}
+
+:global(.dark) .loginTrigger:hover {
+  background: #5d5d5d;
+  border-color: #7a7a7a;
+}
+
+:global(.dark) .loginTrigger:active {
+  background: #686868;
+}
+
+
+/* ==========================================
  * 手机端
  * ========================================== */
 
 @media (max-width: 640px) {
-  .panel.modalPanel {
-    width:
-      calc(100vw - 24px);
+  .panel,
+  .inlinePanel {
+    width: 100%;
+    max-width: 340px;
 
-    max-width: none;
-    min-height: 320px;
-
-    padding:
-      30px
-      20px
-      24px;
+    padding: 18px;
   }
 
   .userBar {
@@ -582,7 +437,6 @@
 
   .userEmail {
     flex: 1 1 auto;
-
     max-width: none;
   }
 

@@ -1,6 +1,5 @@
 import {
   useEffect,
-  useMemo,
   useState
 } from 'react'
 
@@ -34,8 +33,10 @@ const ComicAuthPanel = () => {
   const [mode, setMode] =
     useState('login')
 
-  const [isOpen, setIsOpen] =
-    useState(false)
+  const [
+    isPanelOpen,
+    setIsPanelOpen
+  ] = useState(false)
 
   const [email, setEmail] =
     useState('')
@@ -61,89 +62,38 @@ const ComicAuthPanel = () => {
     setAvatarFailed
   ] = useState(false)
 
-  /*
-   * Supabase OAuth 登录通常会提供
-   * avatar_url 或 picture。
-   *
-   * 普通邮箱密码注册一般没有头像，
-   * 此时显示邮箱首字母头像。
-   */
-  const avatarUrl = useMemo(() => {
-    return (
-      user?.user_metadata
-        ?.avatar_url ||
-      user?.user_metadata
-        ?.picture ||
-      ''
-    )
-  }, [user])
+  const avatarUrl =
+    user?.user_metadata
+      ?.avatar_url ||
+    user?.user_metadata
+      ?.picture ||
+    ''
 
   useEffect(() => {
     setAvatarFailed(false)
-  }, [avatarUrl])
+  }, [
+    avatarUrl,
+    user?.id
+  ])
 
   /*
-   * 登录成功后自动关闭弹窗。
+   * 登录状态出现后，
+   * 自动收起登录表单。
    */
   useEffect(() => {
     if (user) {
-      setIsOpen(false)
+      setIsPanelOpen(false)
     }
   }, [user])
 
-  /*
-   * 登录弹窗打开后：
-   * 1. 禁止底层页面滚动
-   * 2. 支持按 Esc 关闭
-   */
-  useEffect(() => {
-    if (!isOpen) {
-      return undefined
-    }
+  const toggleLoginPanel = () => {
+    setMessage('')
+    setErrorMessage('')
 
-    const previousOverflow =
-      document.body.style.overflow
-
-    document.body.style.overflow =
-      'hidden'
-
-    const handleKeyDown = event => {
-      if (event.key === 'Escape') {
-        setIsOpen(false)
-      }
-    }
-
-    window.addEventListener(
-      'keydown',
-      handleKeyDown
+    setIsPanelOpen(
+      currentValue =>
+        !currentValue
     )
-
-    return () => {
-      document.body.style.overflow =
-        previousOverflow
-
-      window.removeEventListener(
-        'keydown',
-        handleKeyDown
-      )
-    }
-  }, [isOpen])
-
-  const openLoginPanel = () => {
-    setMessage('')
-    setErrorMessage('')
-    setIsOpen(true)
-  }
-
-  const closeLoginPanel = () => {
-    if (submitting) {
-      return
-    }
-
-    setIsOpen(false)
-    setMessage('')
-    setErrorMessage('')
-    setPassword('')
   }
 
   const changeMode = nextMode => {
@@ -185,14 +135,14 @@ const ComicAuthPanel = () => {
 
         if (mode === 'login') {
           setPassword('')
-          setIsOpen(false)
+          setIsPanelOpen(false)
 
           return
         }
 
         if (result.data?.session) {
           setPassword('')
-          setIsOpen(false)
+          setIsPanelOpen(false)
 
           return
         }
@@ -299,8 +249,7 @@ const ComicAuthPanel = () => {
           <span
             className={
               styles.userEmail
-            }
-            title={user.email}>
+            }>
             {user.email}
           </span>
 
@@ -341,164 +290,139 @@ const ComicAuthPanel = () => {
         className={
           styles.loginTrigger
         }
+        aria-expanded={
+          isPanelOpen
+        }
+        aria-controls='comic-login-panel'
         onClick={
-          openLoginPanel
+          toggleLoginPanel
         }>
         登录
       </button>
 
-      {isOpen && (
-        <div
+      {isPanelOpen && (
+        <section
+          id='comic-login-panel'
           className={
-            styles.modalOverlay
-          }
-          onMouseDown={event => {
-            if (
-              event.target ===
-              event.currentTarget
-            ) {
-              closeLoginPanel()
-            }
-          }}>
-          <section
+            `${styles.panel} ${styles.inlinePanel}`
+          }>
+          <div
             className={
-              `${styles.panel} ${styles.modalPanel}`
-            }
-            role='dialog'
-            aria-modal='true'
-            aria-label='用户登录'>
+              styles.tabs
+            }>
             <button
               type='button'
               className={
-                styles.closeButton
+                mode === 'login'
+                  ? styles.activeTab
+                  : styles.tab
               }
-              aria-label='关闭登录面板'
-              disabled={submitting}
-              onClick={
-                closeLoginPanel
-              }>
-              ×
+              onClick={() => {
+                changeMode(
+                  'login'
+                )
+              }}>
+              登录
             </button>
 
-            <div
+            <button
+              type='button'
               className={
-                styles.tabs
-              }>
-              <button
-                type='button'
-                className={
-                  mode === 'login'
-                    ? styles.activeTab
-                    : styles.tab
-                }
-                onClick={() => {
-                  changeMode(
-                    'login'
-                  )
-                }}>
-                登录
-              </button>
-
-              <button
-                type='button'
-                className={
-                  mode === 'register'
-                    ? styles.activeTab
-                    : styles.tab
-                }
-                onClick={() => {
-                  changeMode(
-                    'register'
-                  )
-                }}>
-                注册
-              </button>
-            </div>
-
-            <form
-              className={
-                styles.form
+                mode === 'register'
+                  ? styles.activeTab
+                  : styles.tab
               }
-              onSubmit={
-                handleSubmit
+              onClick={() => {
+                changeMode(
+                  'register'
+                )
+              }}>
+              注册
+            </button>
+          </div>
+
+          <form
+            className={
+              styles.form
+            }
+            onSubmit={
+              handleSubmit
+            }>
+            <label
+              className={
+                styles.field
               }>
-              <label
-                className={
-                  styles.field
-                }>
-                <span>邮箱</span>
+              <span>邮箱</span>
 
-                <input
-                  type='email'
-                  value={email}
-                  autoComplete='email'
-                  required
-                  autoFocus
-                  onChange={event => {
-                    setEmail(
-                      event.target.value
-                    )
-                  }}
-                />
-              </label>
+              <input
+                type='email'
+                value={email}
+                autoComplete='email'
+                required
+                onChange={event => {
+                  setEmail(
+                    event.target.value
+                  )
+                }}
+              />
+            </label>
 
-              <label
-                className={
-                  styles.field
-                }>
-                <span>密码</span>
+            <label
+              className={
+                styles.field
+              }>
+              <span>密码</span>
 
-                <input
-                  type='password'
-                  value={password}
-                  autoComplete={
-                    mode === 'login'
-                      ? 'current-password'
-                      : 'new-password'
-                  }
-                  minLength={6}
-                  required
-                  onChange={event => {
-                    setPassword(
-                      event.target.value
-                    )
-                  }}
-                />
-              </label>
-
-              <button
-                type='submit'
-                className={
-                  styles.primaryButton
+              <input
+                type='password'
+                value={password}
+                autoComplete={
+                  mode === 'login'
+                    ? 'current-password'
+                    : 'new-password'
                 }
-                disabled={submitting}>
-                {submitting
-                  ? '请稍候……'
-                  : mode === 'login'
-                    ? '登录'
-                    : '创建账号'}
-              </button>
-            </form>
+                minLength={6}
+                required
+                onChange={event => {
+                  setPassword(
+                    event.target.value
+                  )
+                }}
+              />
+            </label>
 
-            {message && (
-              <p
-                className={
-                  styles.success
-                }>
-                {message}
-              </p>
-            )}
+            <button
+              type='submit'
+              className={
+                styles.primaryButton
+              }
+              disabled={submitting}>
+              {submitting
+                ? '请稍候……'
+                : mode === 'login'
+                  ? '登录'
+                  : '创建账号'}
+            </button>
+          </form>
 
-            {errorMessage && (
-              <p
-                className={
-                  styles.error
-                }>
-                {errorMessage}
-              </p>
-            )}
-          </section>
-        </div>
+          {message && (
+            <p
+              className={
+                styles.success
+              }>
+              {message}
+            </p>
+          )}
+
+          {errorMessage && (
+            <p
+              className={
+                styles.error
+              }>
+              {errorMessage}
+            </p>
+          )}
+        </section>
       )}
     </div>
   )
