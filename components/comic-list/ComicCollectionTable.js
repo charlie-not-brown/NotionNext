@@ -94,7 +94,7 @@ const formatChineseDate = value => {
   return `${value.getFullYear()}/${pad2(value.getMonth() + 1)}/${pad2(
     value.getDate()
   )}`
-  }
+}
 
 const formatChineseDateTime = value => {
   if (!(value instanceof Date) || Number.isNaN(value.getTime())) {
@@ -1029,7 +1029,8 @@ const ComicCollectionTable = ({
         innerClass: styles.headerInner
       })
 
-      headerInner.prepend(statusHeader, ratingHeader, dateHeader)
+      headerInner.prepend(statusHeader)
+      headerInner.append(ratingHeader, dateHeader)
     }
 
     const addCellsToRow = (row, rowIndex) => {
@@ -1054,7 +1055,10 @@ const ComicCollectionTable = ({
       const record = recordsRef.current[comicId] || null
 
       row.prepend(
-        createStatusCell(comicId, record),
+        createStatusCell(comicId, record)
+      )
+
+      row.append(
         createRatingCell(comicId, record),
         createDateCell(comicId, record)
       )

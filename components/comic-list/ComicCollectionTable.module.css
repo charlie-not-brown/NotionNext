@@ -22,10 +22,10 @@
 .dateHeaderCell,
 .dateCell {
   box-sizing: border-box;
-  width: 214px !important;
-  min-width: 214px !important;
-  max-width: 214px !important;
-  flex: 0 0 214px !important;
+  width: 112px !important;
+  min-width: 112px !important;
+  max-width: 112px !important;
+  flex: 0 0 112px !important;
 }
 
 .statusHeaderCell,
