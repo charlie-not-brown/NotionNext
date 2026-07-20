@@ -7,15 +7,96 @@ import {
   useState
 } from 'react'
 
-const ComicAuthContext =
-  createContext(null)
+const ComicAuthContext = createContext(null)
 
-const VALID_READING_STATUSES =
-  new Set([
-    'want',
-    'reading',
-    'finished'
-  ])
+const VALID_READING_STATUSES = new Set([
+  'want',
+  'reading',
+  'finished'
+])
+
+const normalizeComicId = comicId => {
+  return String(comicId || '')
+    .replace(/-/g, '')
+    .toLowerCase()
+}
+
+const normalizeRating = rating => {
+  if (
+    rating === null ||
+    rating === undefined ||
+    rating === ''
+  ) {
+    return null
+  }
+
+  const number = Number(rating)
+
+  if (
+    !Number.isInteger(number) ||
+    number < 1 ||
+    number > 5
+  ) {
+    return null
+  }
+
+  return number
+}
+
+const normalizeDateTime = value => {
+  if (!value) {
+    return null
+  }
+
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) {
+    return null
+  }
+
+  return date.toISOString()
+}
+
+const normalizeRecord = record => {
+  const comicId = normalizeComicId(
+    record?.comic_id
+  )
+
+  if (!/^[a-f0-9]{32}$/.test(comicId)) {
+    return null
+  }
+
+  return {
+    comic_id: comicId,
+
+    status: VALID_READING_STATUSES.has(
+      record?.status
+    )
+      ? record.status
+      : null,
+
+    rating: normalizeRating(
+      record?.rating
+    ),
+
+    started_at: normalizeDateTime(
+      record?.started_at
+    ),
+
+    finished_at: normalizeDateTime(
+      record?.finished_at
+    )
+  }
+}
+
+const isEmptyRecord = record => {
+  return (
+    !record?.status &&
+    !record?.rating &&
+    !record?.started_at &&
+    !record?.finished_at
+  )
+}
 
 export const ComicAuthProvider = ({
   children
@@ -35,8 +116,8 @@ export const ComicAuthProvider = ({
   ] = useState('')
 
   const [
-    readingStatuses,
-    setReadingStatuses
+    readingRecords,
+    setReadingRecords
   ] = useState({})
 
   const [
@@ -76,21 +157,15 @@ export const ComicAuthProvider = ({
 
         const {
           data: authListener
-        } = client.auth
-          .onAuthStateChange(
-            (
-              _event,
-              nextSession
-            ) => {
-              if (!mounted) {
-                return
-              }
-
-              setSession(
-                nextSession
-              )
+        } = client.auth.onAuthStateChange(
+          (_event, nextSession) => {
+            if (!mounted) {
+              return
             }
-          )
+
+            setSession(nextSession)
+          }
+        )
 
         subscription =
           authListener.subscription
@@ -98,8 +173,7 @@ export const ComicAuthProvider = ({
         const {
           data,
           error
-        } = await client.auth
-          .getSession()
+        } = await client.auth.getSession()
 
         if (!mounted) {
           return
@@ -139,32 +213,24 @@ export const ComicAuthProvider = ({
   }, [])
 
   /**
-   * 登录用户变化时，
-   * 从 Supabase 读取全部阅读状态。
+   * 登录用户变化后，读取全部漫画记录：
+   * 状态、评分、开始日期、完成日期。
    */
   useEffect(() => {
     const userId =
       session?.user?.id
 
-    if (
-      !supabase ||
-      !userId
-    ) {
-      setReadingStatuses({})
-      setReadingStatusesLoading(
-        false
-      )
-
+    if (!supabase || !userId) {
+      setReadingRecords({})
+      setReadingStatusesLoading(false)
       return
     }
 
     let cancelled = false
 
-    const loadReadingStatuses =
+    const loadReadingRecords =
       async () => {
-        setReadingStatusesLoading(
-          true
-        )
+        setReadingStatusesLoading(true)
 
         const {
           data,
@@ -172,12 +238,15 @@ export const ComicAuthProvider = ({
         } = await supabase
           .from('reading_status')
           .select(
-            'comic_id, status'
+            [
+              'comic_id',
+              'status',
+              'rating',
+              'started_at',
+              'finished_at'
+            ].join(', ')
           )
-          .eq(
-            'user_id',
-            userId
-          )
+          .eq('user_id', userId)
 
         if (cancelled) {
           return
@@ -185,44 +254,33 @@ export const ComicAuthProvider = ({
 
         if (error) {
           console.error(
-            '[ComicAuthContext] 读取阅读状态失败',
+            '[ComicAuthContext] 读取漫画记录失败',
             error
           )
 
-          setReadingStatuses({})
-          setReadingStatusesLoading(
-            false
-          )
-
+          setReadingRecords({})
+          setReadingStatusesLoading(false)
           return
         }
 
-        const nextStatuses = {}
+        const nextRecords = {}
 
-        ;(data || []).forEach(
-          record => {
-            if (
-              record?.comic_id &&
-              VALID_READING_STATUSES
-                .has(record.status)
-            ) {
-              nextStatuses[
-                record.comic_id
-              ] = record.status
-            }
+        ;(data || []).forEach(record => {
+          const normalizedRecord =
+            normalizeRecord(record)
+
+          if (normalizedRecord) {
+            nextRecords[
+              normalizedRecord.comic_id
+            ] = normalizedRecord
           }
-        )
+        })
 
-        setReadingStatuses(
-          nextStatuses
-        )
-
-        setReadingStatusesLoading(
-          false
-        )
+        setReadingRecords(nextRecords)
+        setReadingStatusesLoading(false)
       }
 
-    loadReadingStatuses()
+    loadReadingRecords()
 
     return () => {
       cancelled = true
@@ -233,22 +291,54 @@ export const ComicAuthProvider = ({
   ])
 
   /**
-   * 保存或清除某本漫画的阅读状态。
+   * 保留旧组件当前使用的 readingStatuses。
+   *
+   * 现有三状态按钮仍然可以通过：
+   * readingStatuses[comicId]
+   * 读取状态。
    */
-  const saveReadingStatus =
+  const readingStatuses = useMemo(() => {
+    const nextStatuses = {}
+
+    Object.entries(
+      readingRecords
+    ).forEach(([comicId, record]) => {
+      if (
+        VALID_READING_STATUSES.has(
+          record?.status
+        )
+      ) {
+        nextStatuses[comicId] =
+          record.status
+      }
+    })
+
+    return nextStatuses
+  }, [readingRecords])
+
+  /**
+   * 保存一本漫画的部分记录。
+   *
+   * patch 可以包含：
+   * status
+   * rating
+   * started_at
+   * finished_at
+   *
+   * 没有传入的字段会保留原值。
+   */
+  const saveReadingRecord =
     useCallback(
       async (
         comicId,
-        status
+        patch = {}
       ) => {
         const userId =
           session?.user?.id
 
-        if (
-          !supabase ||
-          !userId
-        ) {
+        if (!supabase || !userId) {
           return {
+            data: null,
             error: new Error(
               '请先登录。'
             )
@@ -256,9 +346,7 @@ export const ComicAuthProvider = ({
         }
 
         const normalizedComicId =
-          String(comicId || '')
-            .replace(/-/g, '')
-            .toLowerCase()
+          normalizeComicId(comicId)
 
         if (
           !/^[a-f0-9]{32}$/.test(
@@ -266,32 +354,124 @@ export const ComicAuthProvider = ({
           )
         ) {
           return {
+            data: null,
             error: new Error(
               '无法读取这条漫画记录的 Notion ID。'
             )
           }
         }
 
-        let error = null
+        const currentRecord =
+          readingRecords[
+            normalizedComicId
+          ] || {
+            comic_id:
+              normalizedComicId,
+            status: null,
+            rating: null,
+            started_at: null,
+            finished_at: null
+          }
+
+        const nextRecord = {
+          ...currentRecord,
+          comic_id:
+            normalizedComicId
+        }
 
         if (
-          VALID_READING_STATUSES
-            .has(status)
+          Object.prototype.hasOwnProperty.call(
+            patch,
+            'status'
+          )
         ) {
+          nextRecord.status =
+            VALID_READING_STATUSES.has(
+              patch.status
+            )
+              ? patch.status
+              : null
+        }
+
+        if (
+          Object.prototype.hasOwnProperty.call(
+            patch,
+            'rating'
+          )
+        ) {
+          nextRecord.rating =
+            normalizeRating(
+              patch.rating
+            )
+        }
+
+        if (
+          Object.prototype.hasOwnProperty.call(
+            patch,
+            'started_at'
+          )
+        ) {
+          nextRecord.started_at =
+            normalizeDateTime(
+              patch.started_at
+            )
+        }
+
+        if (
+          Object.prototype.hasOwnProperty.call(
+            patch,
+            'finished_at'
+          )
+        ) {
+          nextRecord.finished_at =
+            normalizeDateTime(
+              patch.finished_at
+            )
+        }
+
+        let error = null
+
+        /**
+         * 状态、评分和日期全部为空时，
+         * 才删除整条数据库记录。
+         */
+        if (isEmptyRecord(nextRecord)) {
           const result =
             await supabase
-              .from(
-                'reading_status'
+              .from('reading_status')
+              .delete()
+              .eq('user_id', userId)
+              .eq(
+                'comic_id',
+                normalizedComicId
               )
+
+          error = result.error
+        } else {
+          const result =
+            await supabase
+              .from('reading_status')
               .upsert(
                 {
                   user_id: userId,
+
                   comic_id:
                     normalizedComicId,
-                  status,
+
+                  status:
+                    nextRecord.status,
+
+                  rating:
+                    nextRecord.rating,
+
+                  started_at:
+                    nextRecord.started_at,
+
+                  finished_at:
+                    nextRecord.finished_at,
+
                   updated_at:
-                    new Date()
-                      .toISOString()
+                    new Date().toISOString()
                 },
                 {
                   onConflict:
@@ -300,65 +480,124 @@ export const ComicAuthProvider = ({
               )
 
           error = result.error
-        } else {
-          const result =
-            await supabase
-              .from(
-                'reading_status'
-              )
-              .delete()
-              .eq(
-                'user_id',
-                userId
-              )
-              .eq(
-                'comic_id',
-                normalizedComicId
-              )
-
-          error = result.error
         }
 
         if (error) {
           console.error(
-            '[ComicAuthContext] 保存阅读状态失败',
+            '[ComicAuthContext] 保存漫画记录失败',
             error
           )
 
-          return { error }
+          return {
+            data: null,
+            error
+          }
         }
 
-        setReadingStatuses(
-          currentStatuses => {
-            const nextStatuses = {
-              ...currentStatuses
+        setReadingRecords(
+          currentRecords => {
+            const nextRecords = {
+              ...currentRecords
             }
 
             if (
-              VALID_READING_STATUSES
-                .has(status)
+              isEmptyRecord(nextRecord)
             ) {
-              nextStatuses[
-                normalizedComicId
-              ] = status
-            } else {
-              delete nextStatuses[
+              delete nextRecords[
                 normalizedComicId
               ]
+            } else {
+              nextRecords[
+                normalizedComicId
+              ] = nextRecord
             }
 
-            return nextStatuses
+            return nextRecords
           }
         )
 
         return {
+          data: isEmptyRecord(
+            nextRecord
+          )
+            ? null
+            : nextRecord,
+
           error: null
         }
       },
       [
-        supabase,
-        session?.user?.id
+        readingRecords,
+        session?.user?.id,
+        supabase
       ]
+    )
+
+  /**
+   * 兼容现有阅读状态组件。
+   */
+  const saveReadingStatus =
+    useCallback(
+      async (comicId, status) => {
+        return saveReadingRecord(
+          comicId,
+          {
+            status
+          }
+        )
+      },
+      [saveReadingRecord]
+    )
+
+  /**
+   * 保存评分。
+   *
+   * rating 传入 1–5。
+   * 传入 null 可清除评分。
+   */
+  const saveRating = useCallback(
+    async (comicId, rating) => {
+      return saveReadingRecord(
+        comicId,
+        {
+          rating
+        }
+      )
+    },
+    [saveReadingRecord]
+  )
+
+  /**
+   * 保存起止日期。
+   *
+   * 使用示例：
+   *
+   * saveReadingDates(comicId, {
+   *   startedAt,
+   *   finishedAt
+   * })
+   */
+  const saveReadingDates =
+    useCallback(
+      async (
+        comicId,
+        {
+          startedAt = null,
+          finishedAt = null
+        } = {}
+      ) => {
+        return saveReadingRecord(
+          comicId,
+          {
+            started_at:
+              startedAt,
+
+            finished_at:
+              finishedAt
+          }
+        )
+      },
+      [saveReadingRecord]
     )
 
   const signIn = useCallback(
@@ -399,19 +638,18 @@ export const ComicAuthProvider = ({
       }
 
       const emailRedirectTo =
-        typeof window ===
-        'undefined'
+        typeof window === 'undefined'
           ? undefined
           : `${window.location.origin}${window.location.pathname}`
 
-      return supabase.auth
-        .signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo
-          }
-        })
+      return supabase.auth.signUp({
+        email,
+        password,
+
+        options: {
+          emailRedirectTo
+        }
+      })
     },
     [supabase]
   )
@@ -426,8 +664,7 @@ export const ComicAuthProvider = ({
         }
       }
 
-      return supabase.auth
-        .signOut()
+      return supabase.auth.signOut()
     },
     [supabase]
   )
@@ -436,13 +673,32 @@ export const ComicAuthProvider = ({
     () => ({
       supabase,
       session,
+
       user:
         session?.user || null,
+
       loading,
       initializationError,
+
+      /**
+       * 新结构：
+       * readingRecords[comicId]
+       */
+      readingRecords,
+
+      /**
+       * 旧结构：
+       * readingStatuses[comicId]
+       */
       readingStatuses,
+
       readingStatusesLoading,
+
+      saveReadingRecord,
       saveReadingStatus,
+      saveRating,
+      saveReadingDates,
+
       signIn,
       signUp,
       signOut
@@ -452,9 +708,13 @@ export const ComicAuthProvider = ({
       session,
       loading,
       initializationError,
+      readingRecords,
       readingStatuses,
       readingStatusesLoading,
+      saveReadingRecord,
       saveReadingStatus,
+      saveRating,
+      saveReadingDates,
       signIn,
       signUp,
       signOut
@@ -463,7 +723,8 @@ export const ComicAuthProvider = ({
 
   return (
     <ComicAuthContext.Provider
-      value={value}>
+      value={value}
+    >
       {children}
     </ComicAuthContext.Provider>
   )
