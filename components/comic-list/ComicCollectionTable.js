@@ -94,6 +94,7 @@ const formatChineseDate = value => {
   return `${value.getFullYear()}/${pad2(value.getMonth() + 1)}/${pad2(
     value.getDate()
   )}`
+  }
 
 const formatChineseDateTime = value => {
   if (!(value instanceof Date) || Number.isNaN(value.getTime())) {
