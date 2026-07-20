@@ -110,21 +110,30 @@ const formatDateRange = record => {
   const startedAt = parseDateTime(record?.started_at)
   const finishedAt = parseDateTime(record?.finished_at)
 
-  if (!startedAt && !finishedAt) return ''
+  // 没有任何日期时，单元格保持空白
+  if (!startedAt && !finishedAt) {
+    return ''
+  }
 
+  // 同时有开始和结束日期
   if (startedAt && finishedAt) {
+    // 当天开始并当天读完，只显示一个日期
     if (sameDay(startedAt, finishedAt)) {
       return formatChineseDate(startedAt)
     }
 
-    return `${formatChineseDate(startedAt)} → ${formatChineseDate(finishedAt)}`
+    return `${formatChineseDate(startedAt)}-${formatChineseDate(
+      finishedAt
+    )}`
   }
 
+  // 只有开始日期，表示仍在阅读
   if (startedAt) {
-    return `开始 ${formatChineseDate(startedAt)}`
+    return `${formatChineseDate(startedAt)} →`
   }
 
-  return `结束 ${formatChineseDate(finishedAt)}`
+  // 只有结束日期，直接显示完成日期
+  return formatChineseDate(finishedAt)
 }
 
 const removeInjectedElementsForCollection = collectionClassName => {
