@@ -42,6 +42,22 @@ const LayoutBase = (props) => {
   const { children, post } = props
   const { onLoading, fullWidth, locale } = useGlobal()
   const toc = post?.toc
+  
+  const normalizePageId = value =>
+  String(value || '')
+    .replace(/-/g, '')
+    .toLowerCase()
+
+const comicReadingPageId = normalizePageId(
+  siteConfig('COMIC_READING_PAGE_ID', '')
+)
+
+const currentPageId = normalizePageId(post?.id)
+
+const isComicReadingPage =
+  currentPageId &&
+  comicReadingPageId &&
+  currentPageId === comicReadingPageId
 
   // Article detail page vertical layout
   const LAYOUT_VERTICAL =
@@ -118,7 +134,9 @@ const LayoutBase = (props) => {
               className={`${
                 fullWidth
                   ? 'w-full'
-                  : 'max-w-4xl w-full mx-auto'
+                  : isComicReadingPage
+                    ? 'max-w-[1440px] w-full mx-auto'
+                    : 'max-w-4xl w-full mx-auto'
               }`}
             >
               <Transition

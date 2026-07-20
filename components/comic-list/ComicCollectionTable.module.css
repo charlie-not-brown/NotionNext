@@ -2,93 +2,132 @@
 .statusHeaderCell,
 .statusCell {
   box-sizing: border-box;
-
   width: 78px !important;
   min-width: 78px !important;
   max-width: 78px !important;
-
   flex: 0 0 78px !important;
 }
 
+.ratingHeader,
+.ratingHeaderCell,
+.ratingCell {
+  box-sizing: border-box;
+  width: 112px !important;
+  min-width: 112px !important;
+  max-width: 112px !important;
+  flex: 0 0 112px !important;
+}
+
+.dateHeader,
+.dateHeaderCell,
+.dateCell {
+  box-sizing: border-box;
+  width: 214px !important;
+  min-width: 214px !important;
+  max-width: 214px !important;
+  flex: 0 0 214px !important;
+}
+
 .statusHeaderCell,
-.statusCell {
+.statusCell,
+.ratingHeaderCell,
+.ratingCell,
+.dateHeaderCell,
+.dateCell {
   display: flex !important;
   align-items: center;
   justify-content: center;
 }
 
-.statusHeaderInner {
+.headerInner {
   display: flex;
   align-items: center;
   justify-content: center;
-
   width: 100%;
+}
+
+.trigger,
+.ratingTrigger,
+.dateTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 32px;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  outline: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .trigger {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  width: 100%;
-  min-height: 32px;
-
   padding: 0 3px;
-
-  color: inherit;
-  background: transparent;
-
-  border: 0;
-  border-radius: 4px;
-
-  cursor: pointer;
-  outline: none;
-
-  touch-action: manipulation;
-
-  -webkit-tap-highlight-color:
-    transparent;
 }
 
-.trigger:hover {
-  background:
-    rgba(80, 80, 80, 0.06);
+.ratingTrigger {
+  gap: 1px;
+  padding: 0 5px;
 }
 
-.trigger:focus-visible {
-  box-shadow:
-    inset 0 0 0 1px
-    rgba(50, 50, 50, 0.32);
+.ratingEmpty {
+  color: transparent;
 }
 
-.empty {
+.dateTrigger {
+  justify-content: flex-start;
+  padding: 0 8px;
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trigger:hover,
+.ratingTrigger:hover,
+.dateTrigger:hover {
+  background: rgba(80, 80, 80, 0.06);
+}
+
+.trigger:focus-visible,
+.ratingTrigger:focus-visible,
+.dateTrigger:focus-visible {
+  box-shadow: inset 0 0 0 1px rgba(50, 50, 50, 0.32);
+}
+
+.trigger:disabled,
+.ratingTrigger:disabled,
+.dateTrigger:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+.empty,
+.dateEmpty {
   color: transparent;
 }
 
 .pill {
   display: inline-flex;
   align-items: center;
-
   min-height: 23px;
-
   padding: 1px 7px;
-
   border-radius: 999px;
-
   font-size: 13px;
   line-height: 21px;
-
   white-space: nowrap;
 }
 
 .dot {
   display: block;
-
   width: 8px;
   height: 8px;
-
   flex: 0 0 8px;
-
   border-radius: 50%;
 }
 
@@ -123,108 +162,358 @@
   background: #4ba574;
 }
 
-.menu {
+.star {
+  display: inline-block;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.starActive,
+.ratingOptionStars {
+  color: var(--endspace-accent-yellow, #fbfb45);
+}
+
+.menu,
+.datePanel {
   position: fixed;
   z-index: 99999;
-
-  width: 136px;
-
-  padding: 6px;
-
+  box-sizing: border-box;
   color: #37352f;
   background: #ffffff;
-
-  border: 1px solid
-    rgba(15, 15, 15, 0.08);
-
+  border: 1px solid rgba(15, 15, 15, 0.1);
   border-radius: 7px;
-
-  box-sizing: border-box;
-
   box-shadow:
-    0 4px 18px
-      rgba(15, 15, 15, 0.14),
-    0 1px 3px
-      rgba(15, 15, 15, 0.1);
+    0 4px 18px rgba(15, 15, 15, 0.14),
+    0 1px 3px rgba(15, 15, 15, 0.1);
+}
+
+.menu {
+  padding: 6px;
+}
+
+.option,
+.clearButton,
+.monthNav,
+.dateField,
+.calendarDay,
+.dateClearButton {
+  box-sizing: border-box;
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .option,
 .clearButton {
   display: flex;
   align-items: center;
-
   width: 100%;
   min-height: 32px;
-
   padding: 4px 7px;
-
   color: #37352f;
   background: transparent;
-
   border: 0;
   border-radius: 4px;
-
-  box-sizing: border-box;
-
-  font: inherit;
   font-size: 13px;
   text-align: left;
-
-  cursor: pointer;
-
-  touch-action: manipulation;
-
-  -webkit-tap-highlight-color:
-    transparent;
 }
 
 .option:hover,
 .current,
 .clearButton:hover {
-  background:
-    rgba(55, 53, 47, 0.08);
+  background: rgba(55, 53, 47, 0.08);
 }
 
 .clearButton {
   justify-content: center;
-
   min-height: 29px;
   margin-top: 4px;
   padding-top: 5px;
-
-  color:
-    rgba(55, 53, 47, 0.64);
-
-  border-top: 1px solid
-    rgba(55, 53, 47, 0.09);
-
+  color: rgba(55, 53, 47, 0.64);
+  border-top: 1px solid rgba(55, 53, 47, 0.09);
   border-radius: 0 0 4px 4px;
 }
 
-:global(.dark) .menu {
+.ratingMenu {
+  padding: 6px;
+}
+
+.ratingOption {
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ratingOptionStars {
+  font-size: 14px;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.ratingOptionLabel {
+  color: rgba(55, 53, 47, 0.62);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.datePanel {
+  padding: 7px 7px 6px;
+}
+
+.datePanelSaving {
+  pointer-events: none;
+  opacity: 0.72;
+}
+
+.dateFields {
+  display: grid;
+  gap: 5px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid rgba(55, 53, 47, 0.1);
+}
+
+.dateField {
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1fr);
+  align-items: center;
+  width: 100%;
+  min-height: 37px;
+  padding: 0 9px;
+  color: #37352f;
+  background: #f7f7f5;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  text-align: left;
+}
+
+.dateField:hover {
+  background: #efefed;
+}
+
+.dateFieldActive {
+  background: var(--endspace-accent-yellow-dim, rgba(251, 251, 69, 0.15));
+  border-color: var(--endspace-accent-yellow, #fbfb45);
+  box-shadow: 0 0 0 1px var(--endspace-accent-yellow-dim, rgba(251, 251, 69, 0.15));
+}
+
+.dateFieldLabel {
+  color: rgba(55, 53, 47, 0.58);
+  font-size: 12px;
+}
+
+.dateFieldValue {
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.monthHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 42px;
+  padding: 4px 5px 1px 9px;
+}
+
+.monthActions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.monthNav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  color: rgba(55, 53, 47, 0.58);
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.monthNav:hover {
+  color: #37352f;
+  background: rgba(55, 53, 47, 0.08);
+}
+
+.monthLabel {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.weekdayRow,
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.weekdayRow {
+  padding: 0 3px;
+}
+
+.weekdayRow span {
+  color: rgba(55, 53, 47, 0.5);
+  font-size: 11px;
+  line-height: 28px;
+  text-align: center;
+}
+
+.calendarGrid {
+  gap: 1px;
+  padding: 0 3px 7px;
+}
+
+.calendarDay {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 34px;
+  min-width: 0;
+  justify-self: center;
+  padding: 0;
+  color: #37352f;
+  background: transparent;
+  border: 0;
+  border-radius: 5px;
+  font-size: 13px;
+}
+
+.calendarDay:hover {
+  background: rgba(55, 53, 47, 0.08);
+}
+
+.calendarOutside {
+  color: rgba(55, 53, 47, 0.38);
+}
+
+.calendarRange {
+  background: var(--endspace-accent-yellow-dim, rgba(251, 251, 69, 0.15));
+  border-radius: 0;
+}
+
+.calendarStart,
+.calendarEnd {
+  color: #18181b;
+  background: var(--endspace-accent-yellow, #fbfb45);
+  font-weight: 700;
+}
+
+.calendarStart:hover,
+.calendarEnd:hover {
+  background: var(--endspace-accent-yellow, #fbfb45);
+}
+
+.calendarToday::after {
+  position: absolute;
+  right: 5px;
+  bottom: 3px;
+  width: 3px;
+  height: 3px;
+  background: var(--endspace-accent-yellow, #fbfb45);
+  border-radius: 50%;
+  content: '';
+}
+
+.calendarStart.calendarToday::after,
+.calendarEnd.calendarToday::after {
+  background: #18181b;
+}
+
+.dateClearButton {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 34px;
+  padding: 5px 9px;
+  color: rgba(55, 53, 47, 0.72);
+  background: transparent;
+  border: 0;
+  border-top: 1px solid rgba(55, 53, 47, 0.1);
+  border-radius: 0 0 4px 4px;
+  font-size: 13px;
+  text-align: left;
+}
+
+.dateClearButton:hover {
+  background: rgba(55, 53, 47, 0.08);
+}
+
+.dateClearButton:disabled {
+  cursor: default;
+  opacity: 0.38;
+}
+
+:global(.dark) .menu,
+:global(.dark) .datePanel {
   color: #e8e8e8;
   background: #252525;
-
-  border-color:
-    rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 :global(.dark) .option,
-:global(.dark) .clearButton {
+:global(.dark) .clearButton,
+:global(.dark) .dateField,
+:global(.dark) .monthNav,
+:global(.dark) .calendarDay,
+:global(.dark) .dateClearButton {
   color: #e8e8e8;
 }
 
-:global(.dark) .clearButton {
-  color:
-    rgba(235, 235, 235, 0.66);
-
-  border-top-color:
-    rgba(255, 255, 255, 0.1);
+:global(.dark) .clearButton,
+:global(.dark) .dateClearButton {
+  color: rgba(235, 235, 235, 0.68);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 :global(.dark) .option:hover,
 :global(.dark) .current,
-:global(.dark) .clearButton:hover {
-  background:
-    rgba(255, 255, 255, 0.08);
+:global(.dark) .clearButton:hover,
+:global(.dark) .monthNav:hover,
+:global(.dark) .calendarDay:hover,
+:global(.dark) .dateClearButton:hover,
+:global(.dark) .trigger:hover,
+:global(.dark) .ratingTrigger:hover,
+:global(.dark) .dateTrigger:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+:global(.dark) .ratingOptionLabel,
+:global(.dark) .dateFieldLabel,
+:global(.dark) .weekdayRow span {
+  color: rgba(235, 235, 235, 0.52);
+}
+
+:global(.dark) .dateField {
+  background: #303030;
+}
+
+:global(.dark) .dateField:hover {
+  background: #373737;
+}
+
+:global(.dark) .dateFieldActive {
+  background: var(--endspace-accent-yellow-dim, rgba(251, 251, 69, 0.15));
+  border-color: var(--endspace-accent-yellow, #fbfb45);
+}
+
+:global(.dark) .calendarOutside {
+  color: rgba(235, 235, 235, 0.34);
+}
+
+:global(.dark) .calendarRange {
+  background: var(--endspace-accent-yellow-dim, rgba(251, 251, 69, 0.15));
+}
+
+:global(.dark) .calendarStart,
+:global(.dark) .calendarEnd {
+  color: #18181b;
+  background: var(--endspace-accent-yellow, #fbfb45);
 }
