@@ -273,7 +273,7 @@ const ComicAuthPanel = () => {
 
           <Link
             href='/comics/reading-stats'
-            className={styles.statsLink}
+            className={styles.userAction}
           >
             统计
           </Link>
@@ -281,7 +281,7 @@ const ComicAuthPanel = () => {
           <button
             type='button'
             className={
-              styles.signOutButton
+              styles.userAction
             }
             disabled={submitting}
             onClick={

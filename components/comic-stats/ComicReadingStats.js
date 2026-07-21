@@ -86,6 +86,59 @@ const getCalendarDays = visibleMonth => {
   })
 }
 
+const HEATMAP_WEEKDAYS = ['一', '', '三', '', '五', '', '日']
+
+const getHeatmapDays = year => {
+  const yearStart = new Date(year, 0, 1)
+  const yearEnd = new Date(year, 11, 31)
+  const startOffset = (yearStart.getDay() + 6) % 7
+  const endOffset = 6 - ((yearEnd.getDay() + 6) % 7)
+  const gridStart = new Date(year, 0, 1 - startOffset)
+  const gridEnd = new Date(year, 11, 31 + endOffset)
+  const dayCount =
+    Math.round((gridEnd.getTime() - gridStart.getTime()) / 86400000) + 1
+
+  return Array.from({ length: dayCount }, (_, index) => {
+    const date = new Date(
+      gridStart.getFullYear(),
+      gridStart.getMonth(),
+      gridStart.getDate() + index
+    )
+
+    return {
+      date,
+      key: getLocalDateKey(date),
+      inCurrentYear: date.getFullYear() === year
+    }
+  })
+}
+
+const getHeatmapMonthLabels = (year, days) => {
+  const gridStart = days[0]?.date
+  if (!gridStart) return []
+
+  return Array.from({ length: 12 }, (_, month) => {
+    const monthStart = new Date(year, month, 1)
+    const dayOffset = Math.round(
+      (monthStart.getTime() - gridStart.getTime()) / 86400000
+    )
+
+    return {
+      month,
+      label: `${month + 1}月`,
+      week: Math.floor(dayOffset / 7)
+    }
+  })
+}
+
+const getHeatmapLevel = count => {
+  if (count >= 4) return 4
+  if (count === 3) return 3
+  if (count === 2) return 2
+  if (count === 1) return 1
+  return 0
+}
+
 const resizeAvatarFile = file =>
   new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -144,7 +197,14 @@ const inlineCloneImages = async root => {
       if (!source || source.startsWith('data:')) return
 
       try {
-        const response = await fetch(source)
+        const absoluteSource = new URL(source, window.location.origin)
+        const requestSource =
+          absoluteSource.origin === window.location.origin
+            ? absoluteSource.toString()
+            : `/api/comic-cover?url=${encodeURIComponent(
+                absoluteSource.toString()
+              )}`
+        const response = await fetch(requestSource)
         if (!response.ok) throw new Error('image request failed')
         const dataUrl = await blobToDataUrl(await response.blob())
         image.src = String(dataUrl)
@@ -274,6 +334,9 @@ const ComicReadingStats = ({ comicCatalog = [] }) => {
     const now = new Date()
     return new Date(now.getFullYear(), now.getMonth(), 1)
   })
+  const [heatmapYear, setHeatmapYear] = useState(() =>
+    new Date().getFullYear()
+  )
 
   const normalizedCatalog = useMemo(
     () =>
@@ -330,7 +393,8 @@ const ComicReadingStats = ({ comicCatalog = [] }) => {
       const comic = catalogById.get(record.comic_id) || {
         comicId: record.comic_id,
         title: '已读完漫画',
-        cover: null
+        cover: null,
+        proxyCover: null
       }
 
       const list = map.get(dateKey) || []
@@ -340,6 +404,32 @@ const ComicReadingStats = ({ comicCatalog = [] }) => {
 
     return map
   }, [catalogById, finishedRecords])
+
+  const activityByDate = useMemo(() => {
+    const map = new Map()
+
+    records.forEach(record => {
+      const recordDays = new Set(
+        [
+          getLocalDateKey(record.started_at),
+          getLocalDateKey(record.finished_at)
+        ].filter(Boolean)
+      )
+
+      recordDays.forEach(dateKey => {
+        map.set(dateKey, (map.get(dateKey) || 0) + 1)
+      })
+    })
+
+    return map
+  }, [records])
+
+  const heatmapDays = useMemo(() => getHeatmapDays(heatmapYear), [heatmapYear])
+  const heatmapMonths = useMemo(
+    () => getHeatmapMonthLabels(heatmapYear, heatmapDays),
+    [heatmapDays, heatmapYear]
+  )
+  const heatmapWeekCount = Math.ceil(heatmapDays.length / 7)
 
   const calendarDays = useMemo(
     () => getCalendarDays(visibleMonth),
@@ -378,7 +468,17 @@ const ComicReadingStats = ({ comicCatalog = [] }) => {
   }, [isEditingName])
 
   useEffect(() => {
-    if (finishedRecords.length === 0) return
+    const activityDates = records
+      .flatMap(record => [record.started_at, record.finished_at])
+      .filter(Boolean)
+      .map(value => new Date(value))
+      .filter(date => !Number.isNaN(date.getTime()))
+      .sort((left, right) => right.getTime() - left.getTime())
+
+    const latestActivity = activityDates[0]
+    if (latestActivity) {
+      setHeatmapYear(latestActivity.getFullYear())
+    }
 
     const latestFinished = finishedRecords
       .map(record => new Date(record.finished_at))
@@ -390,7 +490,7 @@ const ComicReadingStats = ({ comicCatalog = [] }) => {
         new Date(latestFinished.getFullYear(), latestFinished.getMonth(), 1)
       )
     }
-  }, [finishedRecords])
+  }, [finishedRecords, records])
 
   const saveDisplayName = () => {
     if (!user) return
@@ -559,6 +659,90 @@ const ComicReadingStats = ({ comicCatalog = [] }) => {
           </div>
         </section>
 
+        <section className={styles.heatmapSection} aria-label='年度阅读活动'>
+          <header className={styles.heatmapHeader}>
+            <div>
+              <span className={styles.sectionKicker}>READING ACTIVITY</span>
+              <h2>阅读热力图</h2>
+            </div>
+
+            <div className={styles.heatmapYearActions}>
+              <button
+                type='button'
+                className={styles.heatmapYearButton}
+                aria-label='上一年'
+                onClick={() => setHeatmapYear(current => current - 1)}
+              >
+                <IconChevronLeft size={18} stroke={1.8} />
+              </button>
+              <strong>{heatmapYear}</strong>
+              <button
+                type='button'
+                className={styles.heatmapYearButton}
+                aria-label='下一年'
+                onClick={() => setHeatmapYear(current => current + 1)}
+              >
+                <IconChevronRight size={18} stroke={1.8} />
+              </button>
+            </div>
+          </header>
+
+          <div className={styles.heatmapViewport}>
+            <div className={styles.heatmapBody}>
+              <div className={styles.heatmapWeekdays} aria-hidden='true'>
+                {HEATMAP_WEEKDAYS.map((weekday, index) => (
+                  <span key={`${weekday}-${index}`}>{weekday}</span>
+                ))}
+              </div>
+
+              <div className={styles.heatmapContent}>
+                <div
+                  className={styles.heatmapMonths}
+                  style={{
+                    gridTemplateColumns: `repeat(${heatmapWeekCount}, 12px)`
+                  }}
+                  aria-hidden='true'
+                >
+                  {heatmapMonths.map(month => (
+                    <span
+                      key={month.month}
+                      style={{ gridColumnStart: month.week + 1 }}
+                    >
+                      {month.label}
+                    </span>
+                  ))}
+                </div>
+
+                <div
+                  className={styles.heatmapGrid}
+                  style={{
+                    gridTemplateColumns: `repeat(${heatmapWeekCount}, 12px)`
+                  }}
+                >
+                  {heatmapDays.map(day => {
+                    const count = activityByDate.get(day.key) || 0
+                    const level = getHeatmapLevel(count)
+
+                    return (
+                      <span
+                        key={day.key}
+                        className={[
+                          styles.heatmapCell,
+                          styles[`heatmapLevel${level}`],
+                          !day.inCurrentYear ? styles.heatmapOutsideYear : ''
+                        ]
+                          .filter(Boolean)
+                          .join(' ')}
+                        title={`${day.key.replaceAll('-', '/')} · ${count} 次活动`}
+                      />
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className={styles.calendarSection}>
           <header className={styles.calendarHeader}>
             <div className={styles.monthActions}>
@@ -636,15 +820,30 @@ const ComicReadingStats = ({ comicCatalog = [] }) => {
                     .join(' ')}
                   title={completedComics.map(comic => comic.title).join('、')}
                 >
-                  {hasCover ? (
+                  <span className={styles.dayNumber}>
+                    {day.date.getDate()}
+                  </span>
+
+                  {hasCover && (
                     <img
                       className={styles.calendarCover}
                       src={featuredComic.cover}
+                      data-fallback={featuredComic.proxyCover || ''}
                       alt={featuredComic.title}
                       loading='lazy'
+                      onError={event => {
+                        const image = event.currentTarget
+                        const fallback = image.dataset.fallback
+
+                        if (fallback) {
+                          image.dataset.fallback = ''
+                          image.src = fallback
+                          return
+                        }
+
+                        image.style.display = 'none'
+                      }}
                     />
-                  ) : (
-                    <span className={styles.dayNumber}>{day.date.getDate()}</span>
                   )}
 
                   {completedComics.length > 1 && (

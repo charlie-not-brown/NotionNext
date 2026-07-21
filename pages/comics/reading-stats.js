@@ -39,7 +39,8 @@ export async function getStaticProps({ locale }) {
   try {
     const recordMap = await fetchNotionPageBlocks(
       readingPageId,
-      'comic-reading-stats-catalog'
+      'comic-reading-stats-catalog',
+      { cacheVersion: 'comic-stats-covers-v2' }
     )
 
     if (recordMap) {

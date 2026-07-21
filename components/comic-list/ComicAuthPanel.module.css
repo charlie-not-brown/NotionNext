@@ -515,3 +515,44 @@
     margin-left: 0;
   }
 }
+
+/* ==========================================
+ * 统一class
+ * ========================================== */
+
+.userAction {
+  flex: 0 0 auto;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 20px;
+
+  margin: 0;
+  padding: 0;
+
+  border: 0;
+  border-radius: 0;
+
+  background: transparent;
+  color: inherit;
+
+  font: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+
+  text-decoration: none;
+
+  cursor: pointer;
+}
+
+.userAction:hover {
+  opacity: 0.62;
+}
+
+.userAction:disabled {
+  cursor: wait;
+  opacity: 0.45;
+}
