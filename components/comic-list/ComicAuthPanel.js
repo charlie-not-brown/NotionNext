@@ -1,5 +1,3 @@
-import { useRouter } from 'next/router'
-
 import {
   useEffect,
   useState
@@ -29,8 +27,6 @@ const getEmailInitial = email => {
 }
 
 const ComicAuthPanel = () => {
-  const router = useRouter()
-
   const {
     user,
     loading,

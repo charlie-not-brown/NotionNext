@@ -42,7 +42,6 @@ const LayoutBase = (props) => {
   const { children, post } = props
   const { onLoading, fullWidth, locale } = useGlobal()
   const toc = post?.toc
-  const router = useRouter()
   
   const normalizePageId = value =>
   String(value || '')
@@ -61,7 +60,7 @@ const isComicReadingPage =
   currentPageId === comicReadingPageId
 
 const isComicStatsPage =
-  router.pathname === '/comics/reading-stats'
+  currentPageId === 'comicreadingstats'
 
   // Article detail page vertical layout
   const LAYOUT_VERTICAL =
