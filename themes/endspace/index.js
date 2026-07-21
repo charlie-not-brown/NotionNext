@@ -42,6 +42,7 @@ const LayoutBase = (props) => {
   const { children, post } = props
   const { onLoading, fullWidth, locale } = useGlobal()
   const toc = post?.toc
+  const router = useRouter()
   
   const normalizePageId = value =>
   String(value || '')
@@ -58,6 +59,9 @@ const isComicReadingPage =
   currentPageId &&
   comicReadingPageId &&
   currentPageId === comicReadingPageId
+
+const isComicStatsPage =
+  router.pathname === '/comics/reading-stats'
 
   // Article detail page vertical layout
   const LAYOUT_VERTICAL =
@@ -107,7 +111,10 @@ const isComicReadingPage =
       )}
 
       {/* Loading animation */}
-      {LOADING_COVER && <LoadingCover />}
+      {LOADING_COVER &&
+        !isComicStatsPage && (
+          <LoadingCover />
+        )}
 
       {/* Tim Drake Birthday Celebration */}
       <TimBirthdayOverlay />
@@ -134,13 +141,17 @@ const isComicReadingPage =
               className={`${
                 fullWidth
                   ? 'w-full'
-                  : isComicReadingPage
+                  : isComicReadingPage ||
+                      isComicStatsPage
                     ? 'max-w-[1440px] w-full mx-auto'
                     : 'max-w-4xl w-full mx-auto'
               }`}
             >
               <Transition
-                show={!onLoading}
+                show={
+                  isComicStatsPage ||
+                  !onLoading
+                  }
                 appear={true}
                 enter="transition ease-in-out duration-700 transform order-first"
                 enterFrom="opacity-0 translate-y-16"

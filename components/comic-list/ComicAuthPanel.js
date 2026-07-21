@@ -1,3 +1,5 @@
+import { useRouter } from 'next/router'
+
 import {
   useEffect,
   useState
@@ -27,6 +29,8 @@ const getEmailInitial = email => {
 }
 
 const ComicAuthPanel = () => {
+  const router = useRouter()
+
   const {
     user,
     loading,
@@ -281,16 +285,11 @@ const ComicAuthPanel = () => {
 
           <button
             type='button'
-            className={
-              styles.userAction
-            }
+            className={styles.signOutButton}
             disabled={submitting}
-            onClick={
-              handleSignOut
-            }>
-            {submitting
-              ? '退出中……'
-              : '退出'}
+            onClick={handleSignOut}
+          >
+            {submitting ? '退出中……' : '退出'}
           </button>
         </div>
 
