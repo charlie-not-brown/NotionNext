@@ -1,18 +1,33 @@
 import BLOG from '@/blog.config'
+import Link from 'next/link'
 import ComicReadingStats from '@/components/comic-stats/ComicReadingStats'
 import { ComicAuthProvider } from '@/components/comic-list/ComicAuthContext'
 import { siteConfig } from '@/lib/config'
-import { buildComicCatalog, getCollectionRowIds } from '@/lib/comic/getComicCatalog'
+import {
+  buildComicCatalog,
+  getCollectionRowIds,
+} from '@/lib/comic/getComicCatalog'
 import { fetchGlobalAllData } from '@/lib/db/SiteDataApi'
 import {
   fetchInBatches,
-  fetchNotionPageBlocks
+  fetchNotionPageBlocks,
 } from '@/lib/db/notion/getPostBlocks'
 
 const ReadingStatsPage = ({ comicCatalog }) => {
   return (
     <ComicAuthProvider>
-      <ComicReadingStats comicCatalog={comicCatalog} />
+      <div className="w-full">
+        <div className="mb-7">
+          <Link
+            href="/comics/reading-list"
+            className="inline-flex items-center text-sm opacity-60 transition-opacity hover:opacity-100"
+          >
+            ← 返回阅读清单
+          </Link>
+        </div>
+
+        <ComicReadingStats comicCatalog={comicCatalog} />
+      </div>
     </ComicAuthProvider>
   )
 }
@@ -20,19 +35,15 @@ const ReadingStatsPage = ({ comicCatalog }) => {
 export async function getStaticProps({ locale }) {
   const props = await fetchGlobalAllData({
     from: 'comic-reading-stats-props',
-    locale
+    locale,
   })
 
   const readingPageId = siteConfig(
     'COMIC_READING_PAGE_ID',
     '',
-    props.NOTION_CONFIG
+    props.NOTION_CONFIG,
   )
-  const databaseIds = siteConfig(
-    'COMIC_DATABASE_IDS',
-    [],
-    props.NOTION_CONFIG
-  )
+  const databaseIds = siteConfig('COMIC_DATABASE_IDS', [], props.NOTION_CONFIG)
 
   let comicCatalog = []
 
@@ -40,23 +51,23 @@ export async function getStaticProps({ locale }) {
     const recordMap = await fetchNotionPageBlocks(
       readingPageId,
       'comic-reading-stats-catalog',
-      { cacheVersion: 'comic-stats-covers-v2' }
+      { cacheVersion: 'comic-stats-covers-v3' },
     )
 
     if (recordMap) {
       const rowIds = getCollectionRowIds(recordMap, databaseIds)
       const existingIds = new Set(
-        Object.keys(recordMap.block || {}).map(id =>
-          String(id).replace(/-/g, '').toLowerCase()
-        )
+        Object.keys(recordMap.block || {}).map((id) =>
+          String(id).replace(/-/g, '').toLowerCase(),
+        ),
       )
-      const missingIds = rowIds.filter(id => !existingIds.has(id))
+      const missingIds = rowIds.filter((id) => !existingIds.has(id))
 
       if (missingIds.length > 0) {
         const fetchedBlocks = await fetchInBatches(missingIds)
         recordMap.block = {
           ...(recordMap.block || {}),
-          ...fetchedBlocks
+          ...fetchedBlocks,
         }
       }
 
@@ -65,7 +76,7 @@ export async function getStaticProps({ locale }) {
   } catch (error) {
     console.warn(
       '[reading-stats] comic catalog failed:',
-      error?.message || error
+      error?.message || error,
     )
   }
 
@@ -76,7 +87,7 @@ export async function getStaticProps({ locale }) {
     summary: '漫画阅读状态、完成日历与阅读时长统计',
     slug: 'comics/reading-stats',
     type: 'Page',
-    status: 'Published'
+    status: 'Published',
   }
 
   return {
@@ -86,8 +97,8 @@ export async function getStaticProps({ locale }) {
       : siteConfig(
           'NEXT_REVALIDATE_SECOND',
           BLOG.NEXT_REVALIDATE_SECOND,
-          props.NOTION_CONFIG
-        )
+          props.NOTION_CONFIG,
+        ),
   }
 }
 

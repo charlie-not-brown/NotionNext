@@ -1,48 +1,22 @@
+.page,
+.statePage {
+  width: 100%;
+}
+
 .page {
+  padding: 0 0 72px;
+}
+
+.statePage {
+  min-height: 42vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--endspace-text-muted, #777);
+}
+
+.content {
   width: 100%;
-  max-width: 1220px;
-  margin: 0 auto;
-  padding: 42px 28px 72px;
-  box-sizing: border-box;
-  color: var(--endspace-text-primary, #161616);
-}
-
-.card {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-  padding: 68px 70px 72px;
-  box-sizing: border-box;
-  background: var(--endspace-bg-base, #fafafa);
-  border: 1px solid var(--endspace-accent-yellow, #fbfb45);
-}
-
-.topCorner {
-  position: absolute;
-  top: -1px;
-  left: -1px;
-  z-index: 3;
-  width: 22px;
-  height: 22px;
-  border-top: 4px solid var(--endspace-text-primary, #161616);
-  border-left: 4px solid var(--endspace-text-primary, #161616);
-  pointer-events: none;
-}
-
-.watermark {
-  position: absolute;
-  top: 26px;
-  right: 28px;
-  z-index: 0;
-  color: rgba(20, 20, 20, 0.035);
-  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: clamp(76px, 10vw, 148px);
-  font-weight: 800;
-  line-height: 0.9;
-  letter-spacing: -0.06em;
-  white-space: nowrap;
-  pointer-events: none;
-  user-select: none;
 }
 
 .profileHeader,
@@ -50,64 +24,64 @@
 .heatmapSection,
 .calendarSection {
   position: relative;
-  z-index: 1;
 }
 
 .profileHeader {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 32px;
-  align-items: center;
   min-height: 132px;
-  padding-bottom: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  padding: 8px 0 34px;
   border-bottom: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.12));
 }
 
 .identity {
   min-width: 0;
+  flex: 1;
 }
 
 .displayName,
 .nameInput {
-  display: block;
-  width: min(100%, 680px);
-  min-width: 0;
+  max-width: 100%;
   margin: 0;
-  padding: 4px 0 8px;
-  box-sizing: border-box;
+  padding: 0;
   border: 0;
-  border-bottom: 2px solid transparent;
+  border-radius: 0;
   background: transparent;
-  color: inherit;
+  color: var(--endspace-text-primary, #161616);
   font: inherit;
-  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: clamp(24px, 4vw, 40px);
-  font-weight: 700;
-  line-height: 1.2;
+  font-size: clamp(25px, 3.2vw, 42px);
+  font-weight: 650;
+  line-height: 1.15;
+  letter-spacing: -0.04em;
   text-align: left;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .displayName {
   cursor: text;
-}
-
-.displayName:hover {
-  border-bottom-color: var(--endspace-accent-yellow, #fbfb45);
+  overflow-wrap: anywhere;
 }
 
 .nameInput {
+  width: 100%;
+  border-bottom: 1px solid currentColor;
   outline: none;
-  border-bottom-color: var(--endspace-accent-yellow, #fbfb45);
+}
+
+.avatarControl,
+.avatar,
+.avatarFallback {
+  width: 118px;
+  height: 118px;
 }
 
 .avatarControl {
   position: relative;
+  flex: 0 0 auto;
   display: block;
-  width: 124px;
-  height: 124px;
+  overflow: hidden;
+  border-radius: 50%;
   cursor: pointer;
 }
 
@@ -115,7 +89,6 @@
   position: absolute;
   width: 1px;
   height: 1px;
-  overflow: hidden;
   opacity: 0;
   pointer-events: none;
 }
@@ -123,51 +96,45 @@
 .avatar,
 .avatarFallback {
   display: flex;
-  width: 124px;
-  height: 124px;
-  box-sizing: border-box;
-  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
   object-fit: cover;
-  background: #ececeb;
-  border: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.12));
+  border-radius: 50%;
+  background: var(--endspace-bg-secondary, #efefef);
 }
 
 .avatarFallback {
-  align-items: center;
-  justify-content: center;
-  background: #202020;
-  color: #ffffff;
-  font-size: 38px;
-  font-weight: 700;
+  color: var(--endspace-text-primary, #161616);
+  font-size: 34px;
+  font-weight: 650;
 }
 
 .avatarEditIcon {
   position: absolute;
-  right: 3px;
-  bottom: 5px;
-  display: inline-flex;
+  right: 6px;
+  bottom: 6px;
+  width: 30px;
+  height: 30px;
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 31px;
-  height: 31px;
   border-radius: 50%;
-  background: var(--endspace-accent-yellow, #fbfb45);
-  color: #111111;
-  border: 3px solid var(--endspace-bg-base, #fafafa);
+  background: var(--endspace-text-primary, #161616);
+  color: var(--endspace-bg-base, #fafafa);
 }
 
 .overview {
   display: grid;
-  grid-template-columns: 190px minmax(0, 1fr);
-  gap: 44px;
+  grid-template-columns: 150px minmax(0, 1fr);
   align-items: center;
-  padding: 54px 0;
+  gap: 44px;
+  padding: 50px 0;
   border-bottom: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.12));
 }
 
 .ringWrap {
-  width: 176px;
-  height: 176px;
+  width: 142px;
+  height: 142px;
 }
 
 .ring {
@@ -180,7 +147,7 @@
 .ringTrack,
 .ringProgress {
   fill: none;
-  stroke-width: 12;
+  stroke-width: 11;
 }
 
 .ringTrack {
@@ -189,97 +156,82 @@
 
 .ringProgress {
   stroke: var(--endspace-accent-yellow, #fbfb45);
-  stroke-linecap: butt;
+  stroke-linecap: round;
 }
 
 .ringSummary {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 4px;
+  gap: 7px;
 }
 
 .ringSummary strong {
-  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: clamp(38px, 6vw, 72px);
-  font-weight: 750;
+  color: var(--endspace-text-primary, #161616);
+  font-size: clamp(42px, 6vw, 72px);
   line-height: 1;
-  letter-spacing: -0.055em;
+  letter-spacing: -0.06em;
 }
 
 .ringSummary span {
-  font-size: 16px;
-  opacity: 0.55;
+  color: var(--endspace-text-muted, #777);
+  font-size: 15px;
   letter-spacing: 0.08em;
 }
 
 .heatmapSection {
-  padding: 48px 0 50px;
-  border-bottom: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.12));
+  padding: 38px 0 44px;
+  border: 0;
 }
 
-.heatmapHeader {
+.heatmapToolbar {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 22px;
-}
-
-.sectionKicker {
-  display: block;
-  margin-bottom: 6px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  opacity: 0.42;
-}
-
-.heatmapHeader h2 {
-  margin: 0;
-  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 25px;
-  font-weight: 720;
-  line-height: 1;
-  letter-spacing: -0.035em;
-}
-
-.heatmapYearActions {
-  display: inline-flex;
   align-items: center;
-  gap: 5px;
+  justify-content: flex-end;
+  gap: 7px;
+  min-height: 26px;
+  margin-bottom: 15px;
 }
 
-.heatmapYearActions strong {
-  min-width: 54px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 13px;
+.heatmapToolbar strong {
+  min-width: 46px;
+  color: var(--endspace-text-muted, #777);
+  font-size: 12px;
+  font-weight: 500;
   text-align: center;
 }
 
-.heatmapYearButton {
+.heatmapYearButton,
+.monthButton {
+  appearance: none;
+  -webkit-appearance: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
   margin: 0;
   padding: 0;
   border: 0;
   background: transparent;
-  color: inherit;
+  color: var(--endspace-text-primary, #161616);
   cursor: pointer;
 }
 
-.heatmapYearButton:hover {
-  background: var(--endspace-accent-yellow, #fbfb45);
-  color: #111111;
+.heatmapYearButton {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+
+.heatmapYearButton:hover,
+.monthButton:hover {
+  background: var(--endspace-bg-secondary, rgba(22, 22, 22, 0.06));
 }
 
 .heatmapViewport {
   width: 100%;
   overflow-x: auto;
-  padding-bottom: 4px;
+  overflow-y: hidden;
+  padding: 2px 0 7px;
   scrollbar-width: thin;
 }
 
@@ -295,45 +247,18 @@
   display: grid;
   grid-template-rows: 18px repeat(7, 12px);
   row-gap: 3px;
-  padding-top: 0;
+  color: var(--endspace-text-muted, #777);
+  font-size: 8px;
+  line-height: 12px;
+  text-align: right;
+}
+
+.heatmapWeekdays::before {
+  content: '';
 }
 
 .heatmapWeekdays span {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
   height: 12px;
-  font-size: 8px;
-  line-height: 1;
-  opacity: 0.42;
-}
-
-.heatmapWeekdays span:first-child {
-  grid-row: 2;
-}
-
-.heatmapWeekdays span:nth-child(2) {
-  grid-row: 3;
-}
-
-.heatmapWeekdays span:nth-child(3) {
-  grid-row: 4;
-}
-
-.heatmapWeekdays span:nth-child(4) {
-  grid-row: 5;
-}
-
-.heatmapWeekdays span:nth-child(5) {
-  grid-row: 6;
-}
-
-.heatmapWeekdays span:nth-child(6) {
-  grid-row: 7;
-}
-
-.heatmapWeekdays span:nth-child(7) {
-  grid-row: 8;
 }
 
 .heatmapContent {
@@ -344,6 +269,7 @@
   display: grid;
   column-gap: 3px;
   height: 18px;
+  color: var(--endspace-text-muted, #777);
   overflow: visible;
 }
 
@@ -351,7 +277,7 @@
   width: max-content;
   font-size: 8px;
   line-height: 1;
-  opacity: 0.45;
+  opacity: 0.55;
   white-space: nowrap;
 }
 
@@ -368,9 +294,13 @@
   display: block;
   width: 12px;
   height: 12px;
-  box-sizing: border-box;
+  border: 0;
+  border-radius: 4px;
   background: rgba(22, 22, 22, 0.055);
-  border: 1px solid rgba(22, 22, 22, 0.04);
+}
+
+.heatmapLevel0 {
+  background: rgba(22, 22, 22, 0.055);
 }
 
 .heatmapLevel1 {
@@ -394,51 +324,37 @@
 }
 
 .calendarSection {
-  padding-top: 52px;
+  padding-top: 24px;
 }
 
 .calendarHeader {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 28px;
-  margin-bottom: 28px;
+  gap: 24px;
+  margin-bottom: 22px;
 }
 
 .monthActions {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
 }
 
 .monthActions h2 {
-  min-width: 160px;
+  min-width: 150px;
   margin: 0;
-  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: clamp(32px, 5vw, 56px);
-  font-weight: 760;
+  color: var(--endspace-text-primary, #161616);
+  font-size: clamp(32px, 5vw, 54px);
+  font-weight: 650;
   line-height: 1;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.055em;
   text-align: center;
 }
 
 .monthButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-}
-
-.monthButton:hover {
-  background: var(--endspace-accent-yellow, #fbfb45);
-  color: #111111;
+  width: 30px;
+  height: 30px;
 }
 
 .reportSummary {
@@ -446,17 +362,15 @@
   flex-direction: column;
   align-items: flex-end;
   gap: 3px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: var(--endspace-text-muted, #777);
   font-size: 14px;
-  line-height: 1.45;
-}
-
-.reportSummary span {
-  white-space: nowrap;
+  line-height: 1.35;
+  text-align: right;
 }
 
 .reportSummary strong {
-  font-weight: 760;
+  color: var(--endspace-text-primary, #161616);
+  font-weight: 650;
 }
 
 .weekdays,
@@ -466,350 +380,117 @@
 }
 
 .weekdays {
-  border-top: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.16));
-  border-left: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.16));
+  border-top: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.14));
+  border-left: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.14));
 }
 
 .weekdays span {
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 0;
-  height: 46px;
-  border-right: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.16));
-  border-bottom: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.16));
-  font-size: 13px;
-  font-weight: 600;
-  opacity: 0.62;
+  border-right: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.14));
+  color: var(--endspace-text-muted, #777);
+  font-size: 12px;
 }
 
 .calendarGrid {
-  border-left: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.16));
+  border-top: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.14));
+  border-left: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.14));
 }
 
 .calendarCell {
   position: relative;
   min-width: 0;
-  aspect-ratio: 0.72;
+  aspect-ratio: 0.82;
   overflow: hidden;
+  border-right: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.14));
+  border-bottom: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.14));
   background: var(--endspace-bg-base, #fafafa);
-  border-right: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.16));
-  border-bottom: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.16));
 }
 
 .dayNumber {
   position: absolute;
-  top: 10px;
-  left: 11px;
-  z-index: 0;
-  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: clamp(15px, 2vw, 23px);
-  font-weight: 550;
+  top: 8px;
+  left: 9px;
+  z-index: 1;
+  color: var(--endspace-text-primary, #161616);
+  font-size: 13px;
   line-height: 1;
 }
 
 .outsideMonth .dayNumber {
-  opacity: 0.2;
+  opacity: 0.22;
 }
 
 .calendarCover {
   position: absolute;
   inset: 0;
-  z-index: 1;
-  display: block;
+  z-index: 2;
   width: 100%;
   height: 100%;
+  display: block;
   object-fit: cover;
+  background: var(--endspace-bg-secondary, #eee);
 }
 
 .moreBadge {
   position: absolute;
-  right: 5px;
-  z-index: 2;
-  bottom: 5px;
+  right: 6px;
+  bottom: 6px;
+  z-index: 3;
+  min-width: 24px;
+  height: 20px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 24px;
-  height: 24px;
   padding: 0 6px;
-  box-sizing: border-box;
-  background: var(--endspace-accent-yellow, #fbfb45);
-  color: #111111;
-  font-size: 11px;
-  font-weight: 750;
+  border-radius: 999px;
+  background: rgba(16, 16, 16, 0.82);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 650;
 }
 
 .exportButton {
+  appearance: none;
+  -webkit-appearance: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  min-width: 148px;
-  height: 40px;
-  margin: 20px 0 0 auto;
-  padding: 0 17px;
+  gap: 8px;
+  min-width: 150px;
+  min-height: 42px;
+  margin: 34px 0 0;
+  padding: 0 18px;
   border: 1px solid var(--endspace-text-primary, #161616);
-  border-radius: 0;
-  background: var(--endspace-text-primary, #161616);
-  color: var(--endspace-bg-base, #fafafa);
+  border-radius: 2px;
+  background: var(--endspace-bg-base, #fafafa);
+  color: var(--endspace-text-primary, #161616);
   font: inherit;
   font-size: 14px;
   cursor: pointer;
 }
 
 .exportButton:hover {
-  background: var(--endspace-accent-yellow, #fbfb45);
-  color: #111111;
+  background: var(--endspace-text-primary, #161616);
+  color: var(--endspace-bg-base, #fafafa);
 }
 
 .exportButton:disabled {
   cursor: wait;
-  opacity: 0.55;
+  opacity: 0.52;
 }
 
-.statePage {
-  width: 100%;
-  max-width: 920px;
-  min-height: 55vh;
-  margin: 0 auto;
-  padding: 80px 24px;
-  box-sizing: border-box;
-  color: var(--endspace-text-primary, #161616);
-}
-
-.statePage a {
-  text-decoration: underline;
-  text-decoration-color: var(--endspace-accent-yellow, #fbfb45);
-  text-decoration-thickness: 4px;
-}
-
-:global(.dark) .watermark {
-  color: rgba(255, 255, 255, 0.035);
-}
-
-:global(.dark) .avatar,
-:global(.dark) .avatarFallback {
-  border-color: rgba(255, 255, 255, 0.14);
-}
-
-.card[data-export-mode='true'] {
-  width: 390px !important;
-  max-width: 390px !important;
-  padding: 44px 25px 32px !important;
-  background: #fafafa !important;
-  color: #161616 !important;
-  border: 1px solid #fbfb45 !important;
-}
-
-.card[data-export-mode='true'] .topCorner,
-.card[data-export-mode='true'] .watermark {
-  display: block !important;
-}
-
-.card[data-export-mode='true'] .watermark {
-  top: 19px !important;
-  right: 18px !important;
-  font-size: 54px !important;
-  color: rgba(20, 20, 20, 0.04) !important;
-}
-
-.card[data-export-mode='true'] .profileHeader {
-  min-height: 82px !important;
-  gap: 16px !important;
-  padding-bottom: 22px !important;
-  border-bottom-color: rgba(22, 22, 22, 0.12) !important;
-}
-
-.card[data-export-mode='true'] .displayName,
-.card[data-export-mode='true'] .nameInput {
-  font-size: 21px !important;
-}
-
-.card[data-export-mode='true'] .avatarControl,
-.card[data-export-mode='true'] .avatar,
-.card[data-export-mode='true'] .avatarFallback {
-  width: 78px !important;
-  height: 78px !important;
-}
-
-.card[data-export-mode='true'] .avatarEditIcon,
-.card[data-export-mode='true'] .monthButton {
-  display: none !important;
-}
-
-.card[data-export-mode='true'] .overview {
-  grid-template-columns: 104px minmax(0, 1fr) !important;
-  gap: 22px !important;
-  padding: 30px 0 !important;
-  border-bottom-color: rgba(22, 22, 22, 0.12) !important;
-}
-
-.card[data-export-mode='true'] .ringWrap {
-  width: 100px !important;
-  height: 100px !important;
-}
-
-.card[data-export-mode='true'] .ringTrack {
-  stroke: rgba(22, 22, 22, 0.1) !important;
-}
-
-.card[data-export-mode='true'] .ringProgress {
-  stroke: #fbfb45 !important;
-}
-
-.card[data-export-mode='true'] .ringSummary strong {
-  font-size: 34px !important;
-}
-
-.card[data-export-mode='true'] .ringSummary span {
-  font-size: 12px !important;
-}
-
-.card[data-export-mode='true'] .heatmapSection {
-  padding: 28px 0 30px !important;
-  border-bottom-color: rgba(22, 22, 22, 0.12) !important;
-}
-
-.card[data-export-mode='true'] .heatmapHeader {
-  margin-bottom: 14px !important;
-}
-
-.card[data-export-mode='true'] .sectionKicker {
-  margin-bottom: 4px !important;
-  font-size: 7px !important;
-}
-
-.card[data-export-mode='true'] .heatmapHeader h2 {
-  font-size: 18px !important;
-}
-
-.card[data-export-mode='true'] .heatmapYearButton {
-  display: none !important;
-}
-
-.card[data-export-mode='true'] .heatmapYearActions strong {
-  min-width: 0 !important;
-  font-size: 9px !important;
-}
-
-.card[data-export-mode='true'] .heatmapViewport {
-  overflow: hidden !important;
-}
-
-.card[data-export-mode='true'] .heatmapBody {
-  grid-template-columns: 13px max-content !important;
-  gap: 4px !important;
-  transform: scale(0.72);
-  transform-origin: left top;
-  width: 480px !important;
-  margin-bottom: -25px !important;
-}
-
-.card[data-export-mode='true'] .heatmapCell {
-  border-color: rgba(22, 22, 22, 0.04) !important;
-}
-
-.card[data-export-mode='true'] .heatmapLevel0 {
-  background: rgba(22, 22, 22, 0.055) !important;
-}
-
-.card[data-export-mode='true'] .heatmapLevel1 {
-  background: rgba(251, 251, 69, 0.28) !important;
-}
-
-.card[data-export-mode='true'] .heatmapLevel2 {
-  background: rgba(251, 251, 69, 0.52) !important;
-}
-
-.card[data-export-mode='true'] .heatmapLevel3 {
-  background: rgba(251, 251, 69, 0.76) !important;
-}
-
-.card[data-export-mode='true'] .heatmapLevel4 {
-  background: #fbfb45 !important;
-}
-
-.card[data-export-mode='true'] .calendarSection {
-  padding-top: 30px !important;
-}
-
-.card[data-export-mode='true'] .calendarHeader {
-  align-items: flex-end !important;
-  gap: 12px !important;
-  margin-bottom: 16px !important;
-}
-
-.card[data-export-mode='true'] .monthActions h2 {
-  min-width: 0 !important;
-  font-size: 28px !important;
-}
-
-.card[data-export-mode='true'] .reportSummary {
-  gap: 1px !important;
-  font-size: 10px !important;
-}
-
-.card[data-export-mode='true'] .weekdays {
-  border-top-color: rgba(22, 22, 22, 0.18) !important;
-  border-left-color: rgba(22, 22, 22, 0.18) !important;
-}
-
-.card[data-export-mode='true'] .weekdays span {
-  height: 28px !important;
-  border-right-color: rgba(22, 22, 22, 0.18) !important;
-  border-bottom-color: rgba(22, 22, 22, 0.18) !important;
-  font-size: 8px !important;
-}
-
-.card[data-export-mode='true'] .calendarGrid {
-  border-left-color: rgba(22, 22, 22, 0.18) !important;
-}
-
-.card[data-export-mode='true'] .calendarCell {
-  aspect-ratio: 0.68 !important;
-  background: #fafafa !important;
-  border-right-color: rgba(22, 22, 22, 0.18) !important;
-  border-bottom-color: rgba(22, 22, 22, 0.18) !important;
-}
-
-.card[data-export-mode='true'] .dayNumber {
-  top: 5px !important;
-  left: 5px !important;
-  font-size: 10px !important;
-}
-
-.card[data-export-mode='true'] .moreBadge {
-  right: 2px !important;
-  bottom: 2px !important;
-  min-width: 16px !important;
-  height: 16px !important;
-  padding: 0 3px !important;
-  background: #fbfb45 !important;
-  color: #111111 !important;
-  font-size: 8px !important;
-}
-
-@media (max-width: 700px) {
+@media (max-width: 720px) {
   .page {
-    padding: 28px 14px 60px;
-  }
-
-  .card {
-    overflow: visible;
-    padding: 18px 0 0;
-    border: 0;
-  }
-
-  .topCorner,
-  .watermark {
-    display: none;
+    padding-bottom: 52px;
   }
 
   .profileHeader {
-    min-height: 88px;
+    min-height: 94px;
     gap: 16px;
-    padding-bottom: 22px;
+    padding-bottom: 24px;
   }
 
   .displayName,
@@ -820,19 +501,21 @@
   .avatarControl,
   .avatar,
   .avatarFallback {
-    width: 78px;
-    height: 78px;
+    width: 82px;
+    height: 82px;
   }
 
   .avatarEditIcon {
+    right: 2px;
+    bottom: 2px;
     width: 26px;
     height: 26px;
   }
 
   .overview {
     grid-template-columns: 108px minmax(0, 1fr);
-    gap: 22px;
-    padding: 32px 0;
+    gap: 24px;
+    padding: 34px 0;
   }
 
   .ringWrap {
@@ -845,91 +528,53 @@
   }
 
   .heatmapSection {
-    padding: 30px 0 32px;
-  }
-
-  .heatmapHeader {
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-
-  .sectionKicker {
-    margin-bottom: 4px;
-    font-size: 8px;
-  }
-
-  .heatmapHeader h2 {
-    font-size: 20px;
-  }
-
-  .heatmapYearActions {
-    gap: 1px;
-  }
-
-  .heatmapYearButton {
-    width: 25px;
-    height: 25px;
-  }
-
-  .heatmapBody {
-    min-width: 0;
-  }
-
-  .calendarSection {
-    padding-top: 32px;
+    padding: 28px 0 34px;
   }
 
   .calendarHeader {
-    align-items: flex-end;
+    align-items: flex-start;
     gap: 12px;
-    margin-bottom: 18px;
   }
 
   .monthActions {
-    gap: 0;
+    gap: 2px;
   }
 
   .monthActions h2 {
-    min-width: 106px;
-    font-size: 27px;
+    min-width: 112px;
+    font-size: 30px;
   }
 
   .monthButton {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
   }
 
   .reportSummary {
-    gap: 1px;
-    font-size: 10px;
+    font-size: 11px;
   }
 
   .weekdays span {
-    height: 31px;
+    height: 32px;
     font-size: 9px;
   }
 
   .calendarCell {
-    aspect-ratio: 0.68;
+    aspect-ratio: 0.72;
   }
 
   .dayNumber {
     top: 5px;
     left: 5px;
-    font-size: 11px;
+    font-size: 10px;
   }
 
   .moreBadge {
-    right: 2px;
-    bottom: 2px;
-    min-width: 17px;
+    right: 3px;
+    bottom: 3px;
+    min-width: 19px;
     height: 17px;
-    padding: 0 3px;
+    padding: 0 4px;
     font-size: 8px;
-  }
-
-  .exportButton {
-    width: 100%;
-    margin-top: 16px;
   }
 }
