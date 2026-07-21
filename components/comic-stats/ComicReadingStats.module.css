@@ -1,0 +1,654 @@
+.page {
+  width: 100%;
+  max-width: 1220px;
+  margin: 0 auto;
+  padding: 42px 28px 72px;
+  box-sizing: border-box;
+  color: var(--endspace-text-primary, #161616);
+}
+
+.card {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  padding: 68px 70px 72px;
+  box-sizing: border-box;
+  background: var(--endspace-bg-base, #fafafa);
+  border: 1px solid var(--endspace-accent-yellow, #fbfb45);
+}
+
+.topCorner {
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  z-index: 3;
+  width: 22px;
+  height: 22px;
+  border-top: 4px solid var(--endspace-text-primary, #161616);
+  border-left: 4px solid var(--endspace-text-primary, #161616);
+  pointer-events: none;
+}
+
+.watermark {
+  position: absolute;
+  top: 26px;
+  right: 28px;
+  z-index: 0;
+  color: rgba(20, 20, 20, 0.035);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: clamp(76px, 10vw, 148px);
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.06em;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+
+.profileHeader,
+.overview,
+.calendarSection {
+  position: relative;
+  z-index: 1;
+}
+
+.profileHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 32px;
+  align-items: center;
+  min-height: 132px;
+  padding-bottom: 34px;
+  border-bottom: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.12));
+}
+
+.identity {
+  min-width: 0;
+}
+
+.displayName,
+.nameInput {
+  display: block;
+  width: min(100%, 680px);
+  min-width: 0;
+  margin: 0;
+  padding: 4px 0 8px;
+  box-sizing: border-box;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: clamp(24px, 4vw, 40px);
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.displayName {
+  cursor: text;
+}
+
+.displayName:hover {
+  border-bottom-color: var(--endspace-accent-yellow, #fbfb45);
+}
+
+.nameInput {
+  outline: none;
+  border-bottom-color: var(--endspace-accent-yellow, #fbfb45);
+}
+
+.avatarControl {
+  position: relative;
+  display: block;
+  width: 124px;
+  height: 124px;
+  cursor: pointer;
+}
+
+.avatarInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.avatar,
+.avatarFallback {
+  display: flex;
+  width: 124px;
+  height: 124px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #ececeb;
+  border: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.12));
+}
+
+.avatarFallback {
+  align-items: center;
+  justify-content: center;
+  background: #202020;
+  color: #ffffff;
+  font-size: 38px;
+  font-weight: 700;
+}
+
+.avatarEditIcon {
+  position: absolute;
+  right: 3px;
+  bottom: 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 31px;
+  height: 31px;
+  border-radius: 50%;
+  background: var(--endspace-accent-yellow, #fbfb45);
+  color: #111111;
+  border: 3px solid var(--endspace-bg-base, #fafafa);
+}
+
+.overview {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 44px;
+  align-items: center;
+  padding: 54px 0;
+  border-bottom: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.12));
+}
+
+.ringWrap {
+  width: 176px;
+  height: 176px;
+}
+
+.ring {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.ringTrack,
+.ringProgress {
+  fill: none;
+  stroke-width: 12;
+}
+
+.ringTrack {
+  stroke: var(--endspace-border-base, rgba(22, 22, 22, 0.1));
+}
+
+.ringProgress {
+  stroke: var(--endspace-accent-yellow, #fbfb45);
+  stroke-linecap: butt;
+}
+
+.ringSummary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.ringSummary strong {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: clamp(38px, 6vw, 72px);
+  font-weight: 750;
+  line-height: 1;
+  letter-spacing: -0.055em;
+}
+
+.ringSummary span {
+  font-size: 16px;
+  opacity: 0.55;
+  letter-spacing: 0.08em;
+}
+
+.calendarSection {
+  padding-top: 52px;
+}
+
+.calendarHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+  margin-bottom: 28px;
+}
+
+.monthActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.monthActions h2 {
+  min-width: 160px;
+  margin: 0;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: clamp(32px, 5vw, 56px);
+  font-weight: 760;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  text-align: center;
+}
+
+.monthButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.monthButton:hover {
+  background: var(--endspace-accent-yellow, #fbfb45);
+  color: #111111;
+}
+
+.reportSummary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.reportSummary span {
+  white-space: nowrap;
+}
+
+.reportSummary strong {
+  font-weight: 760;
+}
+
+.weekdays,
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.weekdays {
+  border-top: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.16));
+  border-left: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.16));
+}
+
+.weekdays span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 46px;
+  border-right: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.16));
+  border-bottom: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.16));
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.62;
+}
+
+.calendarGrid {
+  border-left: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.16));
+}
+
+.calendarCell {
+  position: relative;
+  min-width: 0;
+  aspect-ratio: 0.72;
+  overflow: hidden;
+  background: var(--endspace-bg-base, #fafafa);
+  border-right: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.16));
+  border-bottom: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.16));
+}
+
+.dayNumber {
+  position: absolute;
+  top: 10px;
+  left: 11px;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: clamp(15px, 2vw, 23px);
+  font-weight: 550;
+  line-height: 1;
+}
+
+.outsideMonth .dayNumber {
+  opacity: 0.2;
+}
+
+.calendarCover {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.moreBadge {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  box-sizing: border-box;
+  background: var(--endspace-accent-yellow, #fbfb45);
+  color: #111111;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.exportButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 148px;
+  height: 40px;
+  margin: 20px 0 0 auto;
+  padding: 0 17px;
+  border: 1px solid var(--endspace-text-primary, #161616);
+  border-radius: 0;
+  background: var(--endspace-text-primary, #161616);
+  color: var(--endspace-bg-base, #fafafa);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.exportButton:hover {
+  background: var(--endspace-accent-yellow, #fbfb45);
+  color: #111111;
+}
+
+.exportButton:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.statePage {
+  width: 100%;
+  max-width: 920px;
+  min-height: 55vh;
+  margin: 0 auto;
+  padding: 80px 24px;
+  box-sizing: border-box;
+  color: var(--endspace-text-primary, #161616);
+}
+
+.statePage a {
+  text-decoration: underline;
+  text-decoration-color: var(--endspace-accent-yellow, #fbfb45);
+  text-decoration-thickness: 4px;
+}
+
+:global(.dark) .watermark {
+  color: rgba(255, 255, 255, 0.035);
+}
+
+:global(.dark) .avatar,
+:global(.dark) .avatarFallback {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.card[data-export-mode='true'] {
+  width: 390px !important;
+  max-width: 390px !important;
+  padding: 44px 25px 32px !important;
+  background: #fafafa !important;
+  color: #161616 !important;
+  border: 1px solid #fbfb45 !important;
+}
+
+.card[data-export-mode='true'] .topCorner,
+.card[data-export-mode='true'] .watermark {
+  display: block !important;
+}
+
+.card[data-export-mode='true'] .watermark {
+  top: 19px !important;
+  right: 18px !important;
+  font-size: 54px !important;
+  color: rgba(20, 20, 20, 0.04) !important;
+}
+
+.card[data-export-mode='true'] .profileHeader {
+  min-height: 82px !important;
+  gap: 16px !important;
+  padding-bottom: 22px !important;
+  border-bottom-color: rgba(22, 22, 22, 0.12) !important;
+}
+
+.card[data-export-mode='true'] .displayName,
+.card[data-export-mode='true'] .nameInput {
+  font-size: 21px !important;
+}
+
+.card[data-export-mode='true'] .avatarControl,
+.card[data-export-mode='true'] .avatar,
+.card[data-export-mode='true'] .avatarFallback {
+  width: 78px !important;
+  height: 78px !important;
+}
+
+.card[data-export-mode='true'] .avatarEditIcon,
+.card[data-export-mode='true'] .monthButton {
+  display: none !important;
+}
+
+.card[data-export-mode='true'] .overview {
+  grid-template-columns: 104px minmax(0, 1fr) !important;
+  gap: 22px !important;
+  padding: 30px 0 !important;
+  border-bottom-color: rgba(22, 22, 22, 0.12) !important;
+}
+
+.card[data-export-mode='true'] .ringWrap {
+  width: 100px !important;
+  height: 100px !important;
+}
+
+.card[data-export-mode='true'] .ringTrack {
+  stroke: rgba(22, 22, 22, 0.1) !important;
+}
+
+.card[data-export-mode='true'] .ringProgress {
+  stroke: #fbfb45 !important;
+}
+
+.card[data-export-mode='true'] .ringSummary strong {
+  font-size: 34px !important;
+}
+
+.card[data-export-mode='true'] .ringSummary span {
+  font-size: 12px !important;
+}
+
+.card[data-export-mode='true'] .calendarSection {
+  padding-top: 30px !important;
+}
+
+.card[data-export-mode='true'] .calendarHeader {
+  align-items: flex-end !important;
+  gap: 12px !important;
+  margin-bottom: 16px !important;
+}
+
+.card[data-export-mode='true'] .monthActions h2 {
+  min-width: 0 !important;
+  font-size: 28px !important;
+}
+
+.card[data-export-mode='true'] .reportSummary {
+  gap: 1px !important;
+  font-size: 10px !important;
+}
+
+.card[data-export-mode='true'] .weekdays {
+  border-top-color: rgba(22, 22, 22, 0.18) !important;
+  border-left-color: rgba(22, 22, 22, 0.18) !important;
+}
+
+.card[data-export-mode='true'] .weekdays span {
+  height: 28px !important;
+  border-right-color: rgba(22, 22, 22, 0.18) !important;
+  border-bottom-color: rgba(22, 22, 22, 0.18) !important;
+  font-size: 8px !important;
+}
+
+.card[data-export-mode='true'] .calendarGrid {
+  border-left-color: rgba(22, 22, 22, 0.18) !important;
+}
+
+.card[data-export-mode='true'] .calendarCell {
+  aspect-ratio: 0.68 !important;
+  background: #fafafa !important;
+  border-right-color: rgba(22, 22, 22, 0.18) !important;
+  border-bottom-color: rgba(22, 22, 22, 0.18) !important;
+}
+
+.card[data-export-mode='true'] .dayNumber {
+  top: 5px !important;
+  left: 5px !important;
+  font-size: 10px !important;
+}
+
+.card[data-export-mode='true'] .moreBadge {
+  right: 2px !important;
+  bottom: 2px !important;
+  min-width: 16px !important;
+  height: 16px !important;
+  padding: 0 3px !important;
+  background: #fbfb45 !important;
+  color: #111111 !important;
+  font-size: 8px !important;
+}
+
+@media (max-width: 700px) {
+  .page {
+    padding: 28px 14px 60px;
+  }
+
+  .card {
+    overflow: visible;
+    padding: 18px 0 0;
+    border: 0;
+  }
+
+  .topCorner,
+  .watermark {
+    display: none;
+  }
+
+  .profileHeader {
+    min-height: 88px;
+    gap: 16px;
+    padding-bottom: 22px;
+  }
+
+  .displayName,
+  .nameInput {
+    font-size: 22px;
+  }
+
+  .avatarControl,
+  .avatar,
+  .avatarFallback {
+    width: 78px;
+    height: 78px;
+  }
+
+  .avatarEditIcon {
+    width: 26px;
+    height: 26px;
+  }
+
+  .overview {
+    grid-template-columns: 108px minmax(0, 1fr);
+    gap: 22px;
+    padding: 32px 0;
+  }
+
+  .ringWrap {
+    width: 104px;
+    height: 104px;
+  }
+
+  .ringSummary strong {
+    font-size: 36px;
+  }
+
+  .calendarSection {
+    padding-top: 32px;
+  }
+
+  .calendarHeader {
+    align-items: flex-end;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .monthActions {
+    gap: 0;
+  }
+
+  .monthActions h2 {
+    min-width: 106px;
+    font-size: 27px;
+  }
+
+  .monthButton {
+    width: 28px;
+    height: 28px;
+  }
+
+  .reportSummary {
+    gap: 1px;
+    font-size: 10px;
+  }
+
+  .weekdays span {
+    height: 31px;
+    font-size: 9px;
+  }
+
+  .calendarCell {
+    aspect-ratio: 0.68;
+  }
+
+  .dayNumber {
+    top: 5px;
+    left: 5px;
+    font-size: 11px;
+  }
+
+  .moreBadge {
+    right: 2px;
+    bottom: 2px;
+    min-width: 17px;
+    height: 17px;
+    padding: 0 3px;
+    font-size: 8px;
+  }
+
+  .exportButton {
+    width: 100%;
+    margin-top: 16px;
+  }
+}
