@@ -1,8 +1,5 @@
 .page,
 .statePage {
-  --stats-yellow: #d6d83a;
-  --stats-yellow-rgb: 214, 216, 58;
-
   width: 100%;
 }
 
@@ -159,7 +156,7 @@
 }
 
 .ringProgress {
-  stroke: var(--stats-yellow);
+  stroke: var(--endspace-accent-yellow, #fbfb45);
   stroke-linecap: round;
 }
 
@@ -322,19 +319,19 @@
 }
 
 .heatmapLevel1 {
-  background: rgba(var(--stats-yellow-rgb), 0.24);
+  background: rgba(251, 251, 69, 0.28);
 }
 
 .heatmapLevel2 {
-  background: rgba(var(--stats-yellow-rgb), 0.46);
+  background: rgba(251, 251, 69, 0.52);
 }
 
 .heatmapLevel3 {
-  background: rgba(var(--stats-yellow-rgb), 0.7);
+  background: rgba(251, 251, 69, 0.76);
 }
 
 .heatmapLevel4 {
-  background: var(--stats-yellow);
+  background: var(--endspace-accent-yellow, #fbfb45);
 }
 
 .heatmapOutsideYear {
@@ -398,12 +395,6 @@
 
 .weekdays,
 .calendarGrid {
-  box-sizing: border-box;
-
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
 }
@@ -431,16 +422,7 @@
 .calendarCell {
   position: relative;
   min-width: 0;
-
-  /*
-   * 按每个格子的实际宽度计算高度。
-   * 宽约 100px 时，高约 86px；
-   * 宽约 60px 时，高约 52px。
-   */
-  aspect-ratio: 1 / 0.86;
-  min-height: 46px;
-  max-height: 88px;
-
+  aspect-ratio: 0.82;
   overflow: hidden;
   border-right: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.14));
   border-bottom: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.14));
@@ -526,12 +508,6 @@
     padding: 0 12px 52px;
   }
 
-  .content,
-  .calendarSection {
-    width: 100%;
-    min-width: 0;
-  }
-
   .profileHeader {
     min-height: 94px;
     gap: 16px;
@@ -605,7 +581,7 @@
   }
 
   .calendarCell {
-    min-height: 44px;
+    aspect-ratio: 0.72;
   }
 
   .dayNumber {
