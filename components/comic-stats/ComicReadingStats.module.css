@@ -1,5 +1,8 @@
 .page,
 .statePage {
+  --stats-yellow: #d6d83a;
+  --stats-yellow-rgb: 214, 216, 58;
+
   width: 100%;
 }
 
@@ -79,10 +82,15 @@
 
 .avatarControl {
   position: relative;
+  z-index: 0;
+
   flex: 0 0 auto;
+
   display: block;
-  overflow: hidden;
+  overflow: visible;
+
   border-radius: 50%;
+
   cursor: pointer;
 }
 
@@ -112,16 +120,28 @@
 
 .avatarEditIcon {
   position: absolute;
-  right: 6px;
-  bottom: 6px;
+  right: -3px;
+  bottom: -3px;
+  z-index: 4;
+
+  box-sizing: border-box;
+
   width: 30px;
   height: 30px;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
+  border: 2px solid var(--endspace-bg-base, #fafafa);
   border-radius: 50%;
+
   background: var(--endspace-text-primary, #161616);
   color: var(--endspace-bg-base, #fafafa);
+
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.16);
+
+  pointer-events: none;
 }
 
 .overview {
@@ -156,7 +176,7 @@
 }
 
 .ringProgress {
-  stroke: var(--endspace-accent-yellow, #fbfb45);
+  stroke: var(--stats-yellow);
   stroke-linecap: round;
 }
 
@@ -319,19 +339,19 @@
 }
 
 .heatmapLevel1 {
-  background: rgba(251, 251, 69, 0.28);
+  background: rgba(var(--stats-yellow-rgb), 0.24);
 }
 
 .heatmapLevel2 {
-  background: rgba(251, 251, 69, 0.52);
+  background: rgba(var(--stats-yellow-rgb), 0.46);
 }
 
 .heatmapLevel3 {
-  background: rgba(251, 251, 69, 0.76);
+  background: rgba(var(--stats-yellow-rgb), 0.70);
 }
 
 .heatmapLevel4 {
-  background: var(--endspace-accent-yellow, #fbfb45);
+  background: var(--stats-yellow);
 }
 
 .heatmapOutsideYear {
@@ -422,6 +442,13 @@
 .calendarCell {
   position: relative;
   min-width: 0;
+
+  /*
+   * iOS 14 Safari 不支持 aspect-ratio。
+   * 88px 是旧设备的桌面/平板兜底高度；
+   * 支持 aspect-ratio 的浏览器会在文件末尾恢复自动高度。
+   */
+  height: 88px;
   aspect-ratio: 0.82;
   overflow: hidden;
   border-right: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.14));
@@ -527,8 +554,9 @@
   }
 
   .avatarEditIcon {
-    right: 2px;
-    bottom: 2px;
+    right: -4px;
+    bottom: -4px;
+
     width: 26px;
     height: 26px;
   }
@@ -581,6 +609,7 @@
   }
 
   .calendarCell {
+    height: 54px;
     aspect-ratio: 0.72;
   }
 
@@ -597,5 +626,15 @@
     height: 17px;
     padding: 0 4px;
     font-size: 8px;
+  }
+}
+
+/* ==========================================
+ * Safari 15+ / 现代浏览器
+ * ========================================== */
+
+@supports (aspect-ratio: 1 / 1) {
+  .calendarCell {
+    height: auto;
   }
 }
