@@ -357,11 +357,25 @@
 }
 
 
-/* 纯文字退出按钮 */
+/* 登录后的“统计”和“退出”共用 */
 
 .signOutButton {
+  appearance: none;
+  -webkit-appearance: none;
+
   flex: 0 0 auto;
 
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  box-sizing: border-box;
+
+  height: 22px;
+  min-height: 22px;
+  max-height: 22px;
+
+  margin: 0;
   padding: 0;
 
   border: 0;
@@ -373,9 +387,17 @@
   font: inherit;
   font-size: 14px;
   font-weight: 400;
-  line-height: inherit;
+  line-height: 22px;
+
+  text-decoration: none;
+  vertical-align: middle;
+  white-space: nowrap;
 
   cursor: pointer;
+}
+
+.signOutButton + .signOutButton {
+  margin-left: 5px;
 }
 
 .signOutButton:hover {
@@ -466,6 +488,8 @@
 
   .userBar {
     width: 100%;
+
+    column-gap: 9px;
   }
 
   .userEmail {
@@ -473,83 +497,21 @@
     max-width: none;
   }
 
-  @media (max-width: 640px) {
-    .userActions {
-      margin-left: auto;
-    }
+  .signOutButton + .signOutButton {
+    margin-left: 7px;
   }
-}
 
-.userActions {
-  flex: 0 0 auto;
+  /*
+   * 兼容之前可能保留的操作按钮外层。
+   */
+  .userActions {
+    flex: 0 0 auto;
 
-  display: inline-flex;
-  align-items: center;
+    display: inline-flex;
+    align-items: center;
 
-  height: 28px;
+    margin-left: 0;
 
-  gap: 9px;
-}
-
-.userActionButton {
-  all: unset;
-
-  box-sizing: border-box;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  width: auto;
-  min-width: 28px;
-
-  height: 28px;
-  min-height: 28px;
-  max-height: 28px;
-
-  margin: 0;
-  padding: 0;
-
-  color: inherit;
-
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1;
-
-  text-decoration: none;
-
-  vertical-align: middle;
-
-  cursor: pointer;
-
-  -webkit-tap-highlight-color:
-    transparent;
-}
-
-.userActionLabel {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  height: 14px;
-
-  margin: 0;
-  padding: 0;
-
-  font: inherit;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 14px;
-
-  text-decoration: none;
-}
-
-.userActionButton:hover {
-  opacity: 0.62;
-}
-
-.userActionButton:disabled {
-  cursor: wait;
-  opacity: 0.45;
+    gap: 10px;
+  }
 }

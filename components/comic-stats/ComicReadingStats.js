@@ -322,7 +322,7 @@ const renderStatsCanvas = async ({
   context.fillStyle = '#fafafa'
   context.fillRect(0, 0, width, height)
 
-  context.strokeStyle = '#dddd2b'
+  context.strokeStyle = '#d6d83a'
   context.lineWidth = 1
   context.strokeRect(10.5, 10.5, width - 21, height - 21)
 
@@ -413,7 +413,7 @@ const renderStatsCanvas = async ({
   context.arc(ringCenterX, ringCenterY, ringRadius, 0, Math.PI * 2)
   context.stroke()
 
-  context.strokeStyle = '#e6e600'
+  context.strokeStyle = '#d6d83a'
   context.beginPath()
   context.arc(
     ringCenterX,
@@ -443,7 +443,7 @@ const renderStatsCanvas = async ({
   const heatmapGridTop = heatmapTop + 25
   const cellSize = 5
   const cellGap = 1.25
-  const heatmapColors = ['#ecece8', '#f8f8b4', '#f4f472', '#eeee31', '#dcdc00']
+  const heatmapColors = ['#ecece8', '#f2f2c4', '#e9ea91', '#dfe064', '#d6d83a']
 
   context.textAlign = 'left'
   context.font = '400 7px Inter, Arial, sans-serif'
