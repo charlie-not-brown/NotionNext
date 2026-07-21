@@ -1,5 +1,6 @@
 import BLOG from '@/blog.config'
 import Link from 'next/link'
+import { useEffect } from 'react'
 import ComicReadingStats from '@/components/comic-stats/ComicReadingStats'
 import { ComicAuthProvider } from '@/components/comic-list/ComicAuthContext'
 import { siteConfig } from '@/lib/config'
@@ -14,6 +15,56 @@ import {
 } from '@/lib/db/notion/getPostBlocks'
 
 const ReadingStatsPage = ({ comicCatalog }) => {
+  useEffect(() => {
+    let frameId = 0
+    let timerId = 0
+
+    const removeDuplicateEndspaceRoots = () => {
+      const roots = Array.from(
+        document.querySelectorAll('#theme-endspace'),
+      )
+
+      if (roots.length <= 1) return
+
+      const currentRoot = roots[roots.length - 1]
+      let removedDuplicate = false
+
+      roots.slice(0, -1).forEach((root) => {
+        if (
+          root !== currentRoot &&
+          root.parentNode
+        ) {
+          root.parentNode.removeChild(root)
+          removedDuplicate = true
+        }
+      })
+
+      if (removedDuplicate) {
+        window.requestAnimationFrame(() => {
+          window.scrollTo(0, 0)
+        })
+      }
+    }
+
+    frameId = window.requestAnimationFrame(
+      removeDuplicateEndspaceRoots,
+    )
+
+    /*
+     * 再检查一次，接住动态主题外壳稍晚挂载的情况。
+     * 不是轮询，只执行这一次。
+     */
+    timerId = window.setTimeout(
+      removeDuplicateEndspaceRoots,
+      180,
+    )
+
+    return () => {
+      window.cancelAnimationFrame(frameId)
+      window.clearTimeout(timerId)
+    }
+  }, [])
+
   return (
     <ComicAuthProvider>
       <div className="w-full">
