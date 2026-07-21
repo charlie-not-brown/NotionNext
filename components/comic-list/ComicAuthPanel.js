@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 import {
   useEffect,
   useState
@@ -268,6 +270,13 @@ const ComicAuthPanel = () => {
             }>
             {user.email}
           </span>
+
+          <Link
+            href='/comics/reading-stats'
+            className={styles.statsLink}
+          >
+            统计
+          </Link>
 
           <button
             type='button'

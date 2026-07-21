@@ -477,3 +477,41 @@
     margin-left: auto;
   }
 }
+
+/* ==========================================
+ * 统计样式
+ * ========================================== */
+
+.statsLink {
+  flex: 0 0 auto;
+
+  padding: 0;
+
+  border: 0;
+  background: transparent;
+
+  color: inherit;
+
+  font: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: inherit;
+
+  text-decoration: none;
+
+  cursor: pointer;
+}
+
+.statsLink:hover {
+  opacity: 0.62;
+}
+
+@media (max-width: 640px) {
+  .statsLink {
+    margin-left: auto;
+  }
+
+  .signOutButton {
+    margin-left: 0;
+  }
+}
