@@ -272,22 +272,36 @@
   border-bottom: 1px solid rgba(55, 53, 47, 0.1);
 }
 
-.dateField {
+.dateFieldControl {
   display: grid;
-  grid-template-columns: 78px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) 74px;
+  gap: 6px;
   align-items: center;
   width: 100%;
-  min-height: 37px;
-  padding: 0 9px;
-  color: #37352f;
+  min-height: 39px;
+  padding: 3px;
+  box-sizing: border-box;
   background: #f7f7f5;
   border: 1px solid transparent;
   border-radius: 6px;
-  text-align: left;
 }
 
-.dateField:hover {
+.dateFieldControl:hover {
   background: #efefed;
+}
+
+.dateField {
+  display: grid;
+  grid-template-columns: 66px minmax(0, 1fr);
+  align-items: center;
+  width: 100%;
+  min-height: 31px;
+  padding: 0 6px;
+  color: #37352f;
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  text-align: left;
 }
 
 .dateFieldActive {
@@ -306,6 +320,33 @@
   font-size: 13px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.dateTimeInput {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 74px;
+  height: 30px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  color: #37352f;
+  background: #ffffff;
+  border: 1px solid rgba(55, 53, 47, 0.14);
+  border-radius: 4px;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1;
+  outline: none;
+}
+
+.dateTimeInput:focus {
+  border-color: var(--endspace-accent-yellow, #fbfb45);
+  box-shadow: 0 0 0 1px var(--endspace-accent-yellow-dim, rgba(251, 251, 69, 0.15));
+}
+
+.dateTimeInput:disabled {
+  cursor: default;
+  opacity: 0.35;
 }
 
 .monthHeader {
@@ -491,12 +532,22 @@
   color: rgba(235, 235, 235, 0.52);
 }
 
-:global(.dark) .dateField {
+:global(.dark) .dateFieldControl {
   background: #303030;
 }
 
-:global(.dark) .dateField:hover {
+:global(.dark) .dateFieldControl:hover {
   background: #373737;
+}
+
+:global(.dark) .dateField {
+  background: transparent;
+}
+
+:global(.dark) .dateTimeInput {
+  color: #e8e8e8;
+  background: #252525;
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 :global(.dark) .dateFieldActive {

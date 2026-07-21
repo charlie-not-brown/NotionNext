@@ -74,6 +74,41 @@ const mergeSelectedDate = (selectedDate, previousValue) => {
   )
 }
 
+const formatTimeInputValue = value => {
+  if (!(value instanceof Date) || Number.isNaN(value.getTime())) {
+    return ''
+  }
+
+  return `${pad2(value.getHours())}:${pad2(value.getMinutes())}`
+}
+
+const mergeSelectedTime = (previousValue, timeValue) => {
+  if (!(previousValue instanceof Date) || Number.isNaN(previousValue.getTime())) {
+    return null
+  }
+
+  const match = String(timeValue || '').match(/^(\d{2}):(\d{2})$/)
+  if (!match) return null
+
+  const hours = Number(match[1])
+  const minutes = Number(match[2])
+
+  if (
+    !Number.isInteger(hours) ||
+    !Number.isInteger(minutes) ||
+    hours < 0 ||
+    hours > 23 ||
+    minutes < 0 ||
+    minutes > 59
+  ) {
+    return null
+  }
+
+  const nextValue = new Date(previousValue.getTime())
+  nextValue.setHours(hours, minutes, 0, 0)
+  return nextValue
+}
+
 const sameDay = (left, right) => {
   return Boolean(
     left instanceof Date &&
@@ -101,38 +136,29 @@ const formatChineseDateTime = value => {
     return '未设置'
   }
 
-  return `${formatChineseDate(value)} ${pad2(value.getHours())}:${pad2(
-    value.getMinutes()
-  )}`
+  return `${formatChineseDate(value)} ${formatTimeInputValue(value)}`
 }
 
 const formatDateRange = record => {
   const startedAt = parseDateTime(record?.started_at)
   const finishedAt = parseDateTime(record?.finished_at)
 
-  // 没有任何日期时，单元格保持空白
   if (!startedAt && !finishedAt) {
     return ''
   }
 
-  // 同时有开始和结束日期
   if (startedAt && finishedAt) {
-    // 当天开始并当天读完，只显示一个日期
     if (sameDay(startedAt, finishedAt)) {
       return formatChineseDate(startedAt)
     }
 
-    return `${formatChineseDate(startedAt)}-${formatChineseDate(
-      finishedAt
-    )}`
+    return `${formatChineseDate(startedAt)}-${formatChineseDate(finishedAt)}`
   }
 
-  // 只有开始日期，表示仍在阅读
   if (startedAt) {
     return `${formatChineseDate(startedAt)} →`
   }
 
-  // 只有结束日期，直接显示完成日期
   return formatChineseDate(finishedAt)
 }
 
@@ -460,15 +486,25 @@ const openRatingMenu = (trigger, comicId, saveRating) => {
   })
 }
 
-const createDateFieldButton = ({ label, value, active, onClick }) => {
-  const button = document.createElement('button')
-  button.type = 'button'
-  button.className = [
-    styles.dateField,
+const createDateFieldControl = ({
+  label,
+  value,
+  dateValue,
+  active,
+  onSelect,
+  onTimeChange
+}) => {
+  const wrapper = document.createElement('div')
+  wrapper.className = [
+    styles.dateFieldControl,
     active ? styles.dateFieldActive : ''
   ]
     .filter(Boolean)
     .join(' ')
+
+  const button = document.createElement('button')
+  button.type = 'button'
+  button.className = styles.dateField
 
   const labelElement = document.createElement('span')
   labelElement.className = styles.dateFieldLabel
@@ -480,9 +516,29 @@ const createDateFieldButton = ({ label, value, active, onClick }) => {
 
   button.appendChild(labelElement)
   button.appendChild(valueElement)
-  button.addEventListener('click', onClick)
+  button.addEventListener('click', event => {
+    event.preventDefault()
+    event.stopPropagation()
+    onSelect()
+  })
 
-  return button
+  const timeInput = document.createElement('input')
+  timeInput.type = 'time'
+  timeInput.className = styles.dateTimeInput
+  timeInput.value = formatTimeInputValue(dateValue)
+  timeInput.disabled = !dateValue
+  timeInput.setAttribute('aria-label', `${label}时间`)
+  timeInput.addEventListener('click', event => {
+    event.stopPropagation()
+  })
+  timeInput.addEventListener('change', event => {
+    event.stopPropagation()
+    onTimeChange(event.target.value)
+  })
+
+  wrapper.appendChild(button)
+  wrapper.appendChild(timeInput)
+  return wrapper
 }
 
 const openDatePanel = ({
@@ -498,9 +554,7 @@ const openDatePanel = ({
   let finishedAt = parseDateTime(record?.finished_at)
   let activeField = !startedAt
     ? 'started'
-    : !finishedAt
-      ? 'finished'
-      : 'started'
+    : 'finished'
   const initialDate = activeField === 'started' ? startedAt : finishedAt
   const now = new Date()
   let visibleMonth = initialDate
@@ -550,49 +604,55 @@ const openDatePanel = ({
 
     if (activeField === 'started') {
       const nextStartedAt = mergeSelectedDate(date, startedAt)
-
       if (!nextStartedAt) return
 
-      startedAt = nextStartedAt
-
-      if (
-        finishedAt &&
-        new Date(
-          finishedAt.getFullYear(),
-          finishedAt.getMonth(),
-          finishedAt.getDate()
-        ).getTime() <
-          new Date(
-            startedAt.getFullYear(),
-            startedAt.getMonth(),
-            startedAt.getDate()
-          ).getTime()
-      ) {
-        finishedAt = null
+      if (finishedAt && nextStartedAt.getTime() > finishedAt.getTime()) {
+        window.alert('开始时间不能晚于结束时间。')
+        return
       }
+
+      startedAt = nextStartedAt
 
       if (!finishedAt) {
         activeField = 'finished'
       }
     } else {
       const nextFinishedAt = mergeSelectedDate(date, finishedAt)
-
       if (!nextFinishedAt) return
 
-      if (
-        startedAt &&
-        new Date(
-          nextFinishedAt.getFullYear(),
-          nextFinishedAt.getMonth(),
-          nextFinishedAt.getDate()
-        ).getTime() <
-          new Date(
-            startedAt.getFullYear(),
-            startedAt.getMonth(),
-            startedAt.getDate()
-          ).getTime()
-      ) {
-        window.alert('结束日期不能早于开始日期。')
+      if (startedAt && nextFinishedAt.getTime() < startedAt.getTime()) {
+        window.alert('结束时间不能早于开始时间。')
+        return
+      }
+
+      finishedAt = nextFinishedAt
+    }
+
+    renderPanel()
+    await persistDates()
+  }
+
+  const changeTime = async (field, timeValue) => {
+    if (isSaving) return
+
+    if (field === 'started') {
+      const nextStartedAt = mergeSelectedTime(startedAt, timeValue)
+      if (!nextStartedAt) return
+
+      if (finishedAt && nextStartedAt.getTime() > finishedAt.getTime()) {
+        window.alert('开始时间不能晚于结束时间。')
+        renderPanel()
+        return
+      }
+
+      startedAt = nextStartedAt
+    } else {
+      const nextFinishedAt = mergeSelectedTime(finishedAt, timeValue)
+      if (!nextFinishedAt) return
+
+      if (startedAt && nextFinishedAt.getTime() < startedAt.getTime()) {
+        window.alert('结束时间不能早于开始时间。')
+        renderPanel()
         return
       }
 
@@ -610,29 +670,37 @@ const openDatePanel = ({
     fields.className = styles.dateFields
 
     fields.appendChild(
-      createDateFieldButton({
+      createDateFieldControl({
         label: '开始日期',
-        value: formatChineseDateTime(startedAt),
+        value: formatChineseDate(startedAt),
+        dateValue: startedAt,
         active: activeField === 'started',
-        onClick: () => {
+        onSelect: () => {
           activeField = 'started'
           const source = startedAt || new Date()
           visibleMonth = new Date(source.getFullYear(), source.getMonth(), 1)
           renderPanel()
+        },
+        onTimeChange: value => {
+          void changeTime('started', value)
         }
       })
     )
 
     fields.appendChild(
-      createDateFieldButton({
+      createDateFieldControl({
         label: '结束日期',
-        value: formatChineseDateTime(finishedAt),
+        value: formatChineseDate(finishedAt),
+        dateValue: finishedAt,
         active: activeField === 'finished',
-        onClick: () => {
+        onSelect: () => {
           activeField = 'finished'
           const source = finishedAt || startedAt || new Date()
           visibleMonth = new Date(source.getFullYear(), source.getMonth(), 1)
           renderPanel()
+        },
+        onTimeChange: value => {
+          void changeTime('finished', value)
         }
       })
     )
@@ -1063,10 +1131,7 @@ const ComicCollectionTable = ({
 
       const record = recordsRef.current[comicId] || null
 
-      row.prepend(
-        createStatusCell(comicId, record)
-      )
-
+      row.prepend(createStatusCell(comicId, record))
       row.append(
         createRatingCell(comicId, record),
         createDateCell(comicId, record)
