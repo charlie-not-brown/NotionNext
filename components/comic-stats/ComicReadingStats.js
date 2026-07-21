@@ -39,20 +39,6 @@ const getEmailInitial = (email) =>
     .charAt(0)
     .toUpperCase() || '?'
 
-const formatDuration = (milliseconds) => {
-  if (!Number.isFinite(milliseconds) || milliseconds <= 0) return '0m'
-
-  const totalMinutes = Math.max(1, Math.round(milliseconds / 60000))
-  const hours = Math.floor(totalMinutes / 60)
-  const minutes = totalMinutes % 60
-
-  if (hours > 0) {
-    return `${hours}h${minutes > 0 ? `${minutes}m` : ''}`
-  }
-
-  return `${minutes}m`
-}
-
 const getCalendarDays = (visibleMonth) => {
   const year = visibleMonth.getFullYear()
   const month = visibleMonth.getMonth()
@@ -290,7 +276,6 @@ const renderStatsCanvas = async ({
   completedCount,
   totalComicCount,
   completedPercent,
-  totalDuration,
   visibleMonth,
   calendarDays,
   completedByDate,
@@ -482,12 +467,7 @@ const renderStatsCanvas = async ({
   context.textAlign = 'right'
   context.font = '400 11px Inter, Arial, sans-serif'
   context.fillStyle = '#555555'
-  context.fillText(
-    `总时长 ${formatDuration(totalDuration)}`,
-    right,
-    calendarHeaderY - 10,
-  )
-  context.fillText(`读完 ${completedCount} 本`, right, calendarHeaderY + 8)
+  context.fillText(`读完 ${completedCount} 本`, right, calendarHeaderY)
 
   const gridLeft = 18
   const gridTop = 448
@@ -624,22 +604,6 @@ const ComicReadingStats = ({ comicCatalog = [] }) => {
 
   const finishedRecords = useMemo(
     () => records.filter((record) => record.status === 'finished'),
-    [records],
-  )
-
-  const totalDuration = useMemo(
-    () =>
-      records.reduce((total, record) => {
-        if (!record.started_at || !record.finished_at) return total
-
-        const startedAt = new Date(record.started_at).getTime()
-        const finishedAt = new Date(record.finished_at).getTime()
-        const duration = finishedAt - startedAt
-
-        return Number.isFinite(duration) && duration > 0
-          ? total + duration
-          : total
-      }, 0),
     [records],
   )
 
@@ -793,7 +757,6 @@ const ComicReadingStats = ({ comicCatalog = [] }) => {
         completedCount,
         totalComicCount,
         completedPercent,
-        totalDuration,
         visibleMonth,
         calendarDays,
         completedByDate,
@@ -1053,9 +1016,6 @@ const ComicReadingStats = ({ comicCatalog = [] }) => {
             </div>
 
             <div className={styles.reportSummary}>
-              <span>
-                总时长 <strong>{formatDuration(totalDuration)}</strong>
-              </span>
               <span>
                 读完 <strong>{completedCount}</strong> 本
               </span>
