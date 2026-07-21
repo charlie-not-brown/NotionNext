@@ -7,26 +7,17 @@
 }
 
 .page {
-  box-sizing: border-box;
-  padding: 0 0 60px;
+  padding: 0 0 72px;
 }
 
 .statePage {
   min-height: 42vh;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
-  padding: 24px;
-
   color: var(--endspace-text-muted, #777);
 }
 
-/*
- * 只限制统计内容宽度，不绘制卡片、边框或背景。
- * 页面外层继续使用 Endspace。
- */
 .content {
   width: min(100%, 820px);
   margin: 0 auto;
@@ -40,21 +31,13 @@
 }
 
 .profileHeader {
-  min-height: 116px;
-
+  min-height: 132px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-
-  gap: 24px;
-  padding: 6px 0 28px;
-
-  border-bottom:
-    1px solid
-    var(
-      --endspace-border-base,
-      rgba(22, 22, 22, 0.12)
-    );
+  gap: 28px;
+  padding: 8px 0 34px;
+  border-bottom: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.12));
 }
 
 .identity {
@@ -65,25 +48,17 @@
 .displayName,
 .nameInput {
   max-width: 100%;
-
   margin: 0;
   padding: 0;
-
   border: 0;
   border-radius: 0;
-
   background: transparent;
-  color:
-    var(
-      --endspace-text-primary,
-      #161616
-    );
-
+  color: var(--endspace-text-primary, #161616);
   font: inherit;
-  font-size: clamp(24px, 3vw, 36px);
+  font-size: clamp(25px, 3.2vw, 42px);
   font-weight: 650;
   line-height: 1.15;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.04em;
   text-align: left;
 }
 
@@ -94,7 +69,6 @@
 
 .nameInput {
   width: 100%;
-
   border-bottom: 1px solid currentColor;
   outline: none;
 }
@@ -102,28 +76,23 @@
 .avatarControl,
 .avatar,
 .avatarFallback {
-  width: 102px;
-  height: 102px;
+  width: 118px;
+  height: 118px;
 }
 
 .avatarControl {
   position: relative;
   flex: 0 0 auto;
-
   display: block;
   overflow: hidden;
-
   border-radius: 50%;
-
   cursor: pointer;
 }
 
 .avatarInput {
   position: absolute;
-
   width: 1px;
   height: 1px;
-
   opacity: 0;
   pointer-events: none;
 }
@@ -133,83 +102,49 @@
   display: flex;
   align-items: center;
   justify-content: center;
-
   object-fit: cover;
-
   border-radius: 50%;
-
-  background:
-    var(
-      --endspace-bg-secondary,
-      #efefef
-    );
+  background: var(--endspace-bg-secondary, #efefef);
 }
 
 .avatarFallback {
-  color:
-    var(
-      --endspace-text-primary,
-      #161616
-    );
-
-  font-size: 30px;
+  color: var(--endspace-text-primary, #161616);
+  font-size: 34px;
   font-weight: 650;
 }
 
 .avatarEditIcon {
   position: absolute;
-  right: 4px;
-  bottom: 4px;
-
-  width: 28px;
-  height: 28px;
-
+  right: 6px;
+  bottom: 6px;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
-
   border-radius: 50%;
-
-  background:
-    var(
-      --endspace-text-primary,
-      #161616
-    );
-
-  color:
-    var(
-      --endspace-bg-base,
-      #fafafa
-    );
+  background: var(--endspace-text-primary, #161616);
+  color: var(--endspace-bg-base, #fafafa);
 }
 
 .overview {
   display: grid;
-  grid-template-columns: 128px minmax(0, 1fr);
+  grid-template-columns: 150px minmax(0, 1fr);
   align-items: center;
-
-  gap: 34px;
-  padding: 40px 0;
-
-  border-bottom:
-    1px solid
-    var(
-      --endspace-border-base,
-      rgba(22, 22, 22, 0.12)
-    );
+  gap: 44px;
+  padding: 50px 0;
+  border-bottom: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.12));
 }
 
 .ringWrap {
-  width: 120px;
-  height: 120px;
+  width: 142px;
+  height: 142px;
 }
 
 .ring {
   display: block;
-
   width: 100%;
   height: 100%;
-
   transform: rotate(-90deg);
 }
 
@@ -220,16 +155,11 @@
 }
 
 .ringTrack {
-  stroke:
-    var(
-      --endspace-border-base,
-      rgba(22, 22, 22, 0.1)
-    );
+  stroke: var(--endspace-border-base, rgba(22, 22, 22, 0.1));
 }
 
 .ringProgress {
   stroke: var(--stats-yellow);
-
   stroke-linecap: round;
 }
 
@@ -237,68 +167,47 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-
-  gap: 6px;
+  gap: 7px;
 }
 
 .ringSummary strong {
-  color:
-    var(
-      --endspace-text-primary,
-      #161616
-    );
-
-  font-size: clamp(38px, 5vw, 58px);
+  color: var(--endspace-text-primary, #161616);
+  font-size: clamp(42px, 6vw, 72px);
   line-height: 1;
-  letter-spacing: -0.055em;
+  letter-spacing: -0.06em;
 }
 
 .ringSummary span {
-  color:
-    var(
-      --endspace-text-muted,
-      #777
-    );
-
-  font-size: 14px;
+  color: var(--endspace-text-muted, #777);
+  font-size: 15px;
   letter-spacing: 0.08em;
 }
-
-/* ==========================================
- * 热力图
- * ========================================== */
 
 .heatmapSection {
   display: flex;
   flex-direction: column;
   align-items: center;
 
-  padding: 34px 0 38px;
+  padding: 38px 0 44px;
 
   border: 0;
 }
 
 .heatmapToolbar {
-  width: min(100%, 710px);
-  min-height: 26px;
-
   display: flex;
   align-items: center;
   justify-content: flex-end;
 
+  width: min(100%, 824px);
+  min-height: 26px;
+  margin: 0 auto 15px;
+
   gap: 7px;
-  margin: 0 auto 12px;
 }
 
 .heatmapToolbar strong {
   min-width: 46px;
-
-  color:
-    var(
-      --endspace-text-muted,
-      #777
-    );
-
+  color: var(--endspace-text-muted, #777);
   font-size: 12px;
   font-weight: 500;
   text-align: center;
@@ -308,46 +217,32 @@
 .monthButton {
   appearance: none;
   -webkit-appearance: none;
-
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   margin: 0;
   padding: 0;
-
   border: 0;
-
   background: transparent;
-  color:
-    var(
-      --endspace-text-primary,
-      #161616
-    );
-
+  color: var(--endspace-text-primary, #161616);
   cursor: pointer;
 }
 
 .heatmapYearButton {
   width: 24px;
   height: 24px;
-
   border-radius: 50%;
 }
 
 .heatmapYearButton:hover,
 .monthButton:hover {
-  background:
-    var(
-      --endspace-bg-secondary,
-      rgba(22, 22, 22, 0.06)
-    );
+  background: var(--endspace-bg-secondary, rgba(22, 22, 22, 0.06));
 }
 
 .heatmapViewport {
-  width: min(100%, 710px);
+  width: min(100%, 824px);
   margin: 0 auto;
-  padding: 2px 0 6px;
+  padding: 2px 0 7px;
 
   overflow-x: auto;
   overflow-y: hidden;
@@ -356,30 +251,23 @@
 }
 
 .heatmapBody {
+  display: grid;
+  grid-template-columns: 18px max-content;
+
   width: max-content;
   min-width: 0;
   margin: 0 auto;
 
-  display: grid;
-  grid-template-columns: 18px max-content;
-
-  gap: 6px;
+  gap: 7px;
 }
 
 .heatmapWeekdays {
   display: grid;
-  grid-template-rows: 16px repeat(7, 10px);
-
+  grid-template-rows: 18px repeat(7, 12px);
   row-gap: 3px;
-
-  color:
-    var(
-      --endspace-text-muted,
-      #777
-    );
-
+  color: var(--endspace-text-muted, #777);
   font-size: 8px;
-  line-height: 10px;
+  line-height: 12px;
   text-align: right;
 }
 
@@ -388,7 +276,7 @@
 }
 
 .heatmapWeekdays span {
-  height: 10px;
+  height: 12px;
 }
 
 .heatmapContent {
@@ -396,74 +284,53 @@
 }
 
 .heatmapMonths {
-  height: 16px;
-
   display: grid;
-
-  column-gap: 2.5px;
-
-  color:
-    var(
-      --endspace-text-muted,
-      #777
-    );
-
+  column-gap: 3px;
+  height: 18px;
+  color: var(--endspace-text-muted, #777);
   overflow: visible;
 }
 
 .heatmapMonths span {
   width: max-content;
-
   font-size: 8px;
   line-height: 1;
-
   opacity: 0.55;
-
   white-space: nowrap;
 }
 
 .heatmapGrid {
-  width: max-content;
-
   display: grid;
-  grid-template-rows: repeat(7, 10px);
+  grid-template-rows: repeat(7, 12px);
   grid-auto-flow: column;
-
-  column-gap: 2.5px;
-  row-gap: 2.5px;
+  column-gap: 3px;
+  row-gap: 3px;
+  width: max-content;
 }
 
 .heatmapCell {
   display: block;
-
-  width: 10px;
-  height: 10px;
-
+  width: 12px;
+  height: 12px;
   border: 0;
-  border-radius: 4px;
-
-  background:
-    rgba(22, 22, 22, 0.055);
+  border-radius: 5px;
+  background: rgba(22, 22, 22, 0.055);
 }
 
 .heatmapLevel0 {
-  background:
-    rgba(22, 22, 22, 0.055);
+  background: rgba(22, 22, 22, 0.055);
 }
 
 .heatmapLevel1 {
-  background:
-    rgba(var(--stats-yellow-rgb), 0.24);
+  background: rgba(var(--stats-yellow-rgb), 0.24);
 }
 
 .heatmapLevel2 {
-  background:
-    rgba(var(--stats-yellow-rgb), 0.46);
+  background: rgba(var(--stats-yellow-rgb), 0.46);
 }
 
 .heatmapLevel3 {
-  background:
-    rgba(var(--stats-yellow-rgb), 0.7);
+  background: rgba(var(--stats-yellow-rgb), 0.7);
 }
 
 .heatmapLevel4 {
@@ -474,83 +341,58 @@
   opacity: 0.2;
 }
 
-/* ==========================================
- * 完成日历
- * ========================================== */
-
 .calendarSection {
   width: min(100%, 700px);
   max-width: 100%;
   min-width: 0;
 
   margin: 0 auto;
-  padding-top: 18px;
+  padding-top: 24px;
 }
 
 .calendarHeader {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-
-  gap: 20px;
-  margin-bottom: 18px;
+  gap: 24px;
+  margin-bottom: 22px;
 }
 
 .monthActions {
   display: flex;
   align-items: center;
-
-  gap: 5px;
+  gap: 8px;
 }
 
 .monthActions h2 {
-  min-width: 126px;
-
+  min-width: 150px;
   margin: 0;
-
-  color:
-    var(
-      --endspace-text-primary,
-      #161616
-    );
-
-  font-size: clamp(28px, 4vw, 40px);
+  color: var(--endspace-text-primary, #161616);
+  font-size: clamp(32px, 5vw, 54px);
   font-weight: 650;
   line-height: 1;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.055em;
   text-align: center;
 }
 
 .monthButton {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
 }
 
 .reportSummary {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-
   gap: 3px;
-
-  color:
-    var(
-      --endspace-text-muted,
-      #777
-    );
-
-  font-size: 13px;
+  color: var(--endspace-text-muted, #777);
+  font-size: 14px;
   line-height: 1.35;
   text-align: right;
 }
 
 .reportSummary strong {
-  color:
-    var(
-      --endspace-text-primary,
-      #161616
-    );
-
+  color: var(--endspace-text-primary, #161616);
   font-weight: 650;
 }
 
@@ -563,118 +405,55 @@
   min-width: 0;
 
   display: grid;
-  grid-template-columns:
-    repeat(7, minmax(0, 1fr));
+  grid-template-columns: repeat(7, minmax(0, 1fr));
 }
 
 .weekdays {
-  border-top:
-    1px solid
-    var(
-      --endspace-border-base,
-      rgba(22, 22, 22, 0.14)
-    );
-
-  border-left:
-    1px solid
-    var(
-      --endspace-border-base,
-      rgba(22, 22, 22, 0.14)
-    );
+  border-top: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.14));
+  border-left: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.14));
 }
 
 .weekdays span {
-  height: 34px;
-
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
-
-  border-right:
-    1px solid
-    var(
-      --endspace-border-base,
-      rgba(22, 22, 22, 0.14)
-    );
-
-  color:
-    var(
-      --endspace-text-muted,
-      #777
-    );
-
-  font-size: 11px;
+  border-right: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.14));
+  color: var(--endspace-text-muted, #777);
+  font-size: 12px;
 }
 
 .calendarGrid {
-  border-top:
-    1px solid
-    var(
-      --endspace-border-base,
-      rgba(22, 22, 22, 0.14)
-    );
-
-  border-left:
-    1px solid
-    var(
-      --endspace-border-base,
-      rgba(22, 22, 22, 0.14)
-    );
+  border-top: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.14));
+  border-left: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.14));
 }
 
 .calendarCell {
   position: relative;
-
   min-width: 0;
 
   /*
-   * 58px 是旧浏览器的稳定回退值。
-   * 新浏览器会按照每个格子的真实宽度计算高度：
-   * 宽 100px 时约高 86px；
-   * 宽 60px 时约高 52px。
+   * 按每个格子的实际宽度计算高度。
+   * 宽约 100px 时，高约 86px；
+   * 宽约 60px 时，高约 52px。
    */
-  height: 58px;
   aspect-ratio: 1 / 0.86;
-
-  min-height: 48px;
+  min-height: 46px;
   max-height: 88px;
 
   overflow: hidden;
-
-  border-right:
-    1px solid
-    var(
-      --endspace-border-base,
-      rgba(22, 22, 22, 0.14)
-    );
-
-  border-bottom:
-    1px solid
-    var(
-      --endspace-border-base,
-      rgba(22, 22, 22, 0.14)
-    );
-
-  background:
-    var(
-      --endspace-bg-base,
-      #fafafa
-    );
+  border-right: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.14));
+  border-bottom: 1px solid var(--endspace-border-base, rgba(22, 22, 22, 0.14));
+  background: var(--endspace-bg-base, #fafafa);
 }
 
 .dayNumber {
   position: absolute;
-  top: 7px;
-  left: 8px;
+  top: 8px;
+  left: 9px;
   z-index: 1;
-
-  color:
-    var(
-      --endspace-text-primary,
-      #161616
-    );
-
-  font-size: 12px;
+  color: var(--endspace-text-primary, #161616);
+  font-size: 13px;
   line-height: 1;
 }
 
@@ -682,114 +461,58 @@
   opacity: 0.22;
 }
 
-.coverCell {
-  background:
-    var(
-      --endspace-bg-secondary,
-      #eeeeee
-    );
-}
-
 .calendarCover {
   position: absolute;
   inset: 0;
   z-index: 2;
-
   width: 100%;
   height: 100%;
-
   display: block;
-
   object-fit: cover;
-
-  background:
-    var(
-      --endspace-bg-secondary,
-      #eeeeee
-    );
+  background: var(--endspace-bg-secondary, #eee);
 }
 
 .moreBadge {
   position: absolute;
-  right: 5px;
-  bottom: 5px;
+  right: 6px;
+  bottom: 6px;
   z-index: 3;
-
-  min-width: 22px;
-  height: 19px;
-
+  min-width: 24px;
+  height: 20px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
-  padding: 0 5px;
-
+  padding: 0 6px;
   border-radius: 999px;
-
-  background:
-    rgba(16, 16, 16, 0.82);
-
-  color: #ffffff;
-
-  font-size: 9px;
+  background: rgba(16, 16, 16, 0.82);
+  color: #fff;
+  font-size: 10px;
   font-weight: 650;
 }
 
 .exportButton {
   appearance: none;
   -webkit-appearance: none;
-
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-
   gap: 8px;
-
-  min-width: 144px;
-  min-height: 40px;
-
-  margin: 28px auto 0;
-  padding: 0 17px;
-
-  border:
-    1px solid
-    var(
-      --endspace-text-primary,
-      #161616
-    );
-
+  min-width: 150px;
+  min-height: 42px;
+  margin: 34px 0 0;
+  padding: 0 18px;
+  border: 1px solid var(--endspace-text-primary, #161616);
   border-radius: 2px;
-
-  background:
-    var(
-      --endspace-bg-base,
-      #fafafa
-    );
-
-  color:
-    var(
-      --endspace-text-primary,
-      #161616
-    );
-
+  background: var(--endspace-bg-base, #fafafa);
+  color: var(--endspace-text-primary, #161616);
   font: inherit;
   font-size: 14px;
-
   cursor: pointer;
 }
 
 .exportButton:hover {
-  background:
-    var(
-      --endspace-text-primary,
-      #161616
-    );
-
-  color:
-    var(
-      --endspace-bg-base,
-      #fafafa
-    );
+  background: var(--endspace-text-primary, #161616);
+  color: var(--endspace-bg-base, #fafafa);
 }
 
 .exportButton:disabled {
@@ -797,136 +520,106 @@
   opacity: 0.52;
 }
 
-/* ==========================================
- * 手机端
- * ========================================== */
-
 @media (max-width: 720px) {
   .page {
-    padding:
-      0 14px 46px;
+    box-sizing: border-box;
+    padding: 0 12px 52px;
   }
 
-  .content {
+  .content,
+  .calendarSection {
     width: 100%;
+    min-width: 0;
   }
 
   .profileHeader {
-    min-height: 88px;
-
-    gap: 14px;
-    padding-bottom: 22px;
+    min-height: 94px;
+    gap: 16px;
+    padding-bottom: 24px;
   }
 
   .displayName,
   .nameInput {
-    font-size: 21px;
+    font-size: 22px;
   }
 
   .avatarControl,
   .avatar,
   .avatarFallback {
-    width: 74px;
-    height: 74px;
+    width: 82px;
+    height: 82px;
   }
 
   .avatarEditIcon {
-    right: 1px;
-    bottom: 1px;
-
-    width: 24px;
-    height: 24px;
+    right: 2px;
+    bottom: 2px;
+    width: 26px;
+    height: 26px;
   }
 
   .overview {
-    grid-template-columns:
-      92px minmax(0, 1fr);
-
-    gap: 20px;
-    padding: 30px 0;
+    grid-template-columns: 108px minmax(0, 1fr);
+    gap: 24px;
+    padding: 34px 0;
   }
 
   .ringWrap {
-    width: 88px;
-    height: 88px;
+    width: 104px;
+    height: 104px;
   }
 
   .ringSummary strong {
-    font-size: 32px;
+    font-size: 36px;
   }
 
   .heatmapSection {
-    padding: 26px 0 30px;
-  }
-
-  .heatmapToolbar,
-  .heatmapViewport {
-    width: 100%;
-  }
-
-  .calendarSection {
-    width: 100%;
-
-    padding-top: 12px;
+    padding: 28px 0 34px;
   }
 
   .calendarHeader {
     align-items: flex-start;
-
-    gap: 10px;
-    margin-bottom: 14px;
+    gap: 12px;
   }
 
   .monthActions {
-    gap: 1px;
+    gap: 2px;
   }
 
   .monthActions h2 {
-    min-width: 92px;
-
-    font-size: 25px;
+    min-width: 112px;
+    font-size: 30px;
   }
 
   .monthButton {
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
   }
 
   .reportSummary {
-    font-size: 10px;
+    font-size: 11px;
   }
 
   .weekdays span {
-    height: 28px;
-
-    font-size: 8px;
-  }
-.dayNumber {
-    top: 4px;
-    left: 4px;
-
+    height: 32px;
     font-size: 9px;
   }
 
+  .calendarCell {
+    min-height: 44px;
+  }
+
+  .dayNumber {
+    top: 5px;
+    left: 5px;
+    font-size: 10px;
+  }
+
   .moreBadge {
-    right: 2px;
-    bottom: 2px;
-
-    min-width: 18px;
-    height: 16px;
-
+    right: 3px;
+    bottom: 3px;
+    min-width: 19px;
+    height: 17px;
     padding: 0 4px;
-
     font-size: 8px;
-  }
-}
-
-@media (max-width: 380px) {
-  .page {
-    padding-right: 10px;
-    padding-left: 10px;
-  }
-.reportSummary {
-    max-width: 92px;
   }
 }
